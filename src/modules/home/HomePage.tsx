@@ -1,5 +1,6 @@
 import { Icon } from "@iconify/react";
 import Head from "next/head";
+import Link from "next/link";
 import { Button } from "~/components/ui/button";
 
 export const HomePage = () => (
@@ -20,9 +21,14 @@ export const HomePage = () => (
         </p>
 
         <div className="flex flex-col items-center gap-4">
-          <Button className="bg-primary-dark flex flex-row place-content-center gap-2 px-10 py-7 text-base">
-            <Icon icon="mingcute:linear-fill" fontSize={24} />
-            Sign in with Linear
+          <Button
+            asChild
+            className="bg-primary-dark flex flex-row place-content-center gap-2 px-10 py-7 text-base"
+          >
+            <Link href="/api/auth/login/linear">
+              <Icon icon="mingcute:linear-fill" fontSize={24} />
+              Sign in with Linear
+            </Link>
           </Button>
         </div>
       </div>
