@@ -1,0 +1,19 @@
+# Used for configuring local dependencies only
+version: '3.9'
+
+services:
+  db:
+    image: postgres:15
+    container_name: chiral_db
+    restart: on-failure
+    environment:
+      - POSTGRES_DB=chiral
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - chiral_db:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+
+volumes:
+  chiral_db:
