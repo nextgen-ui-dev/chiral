@@ -1,34 +1,20 @@
-// Example model schema from the Drizzle docs
-// https://orm.drizzle.team/docs/sql-schema-declaration
+import { bigint, pgTable, varchar } from "drizzle-orm/pg-core";
 
-import { sql } from "drizzle-orm";
-import {
-  bigint,
-  index,
-  mysqlTableCreator,
-  timestamp,
-  varchar,
-} from "drizzle-orm/mysql-core";
+export const users = pgTable("users", {
+  id: varchar("id", { length: 255 }).primaryKey(),
+});
 
-/**
- * This is an example of how to use the multi-project schema feature of Drizzle ORM. Use the same
- * database instance for multiple projects.
- *
- * @see https://orm.drizzle.team/docs/goodies#multi-project-schema
- */
-export const mysqlTable = mysqlTableCreator((name) => `chiral_${name}`);
+export const sessions = pgTable("sessions", {
+  id: varchar("id", { length: 255 }).primaryKey(),
+  userId: varchar("user_id", { length: 255 }).notNull(),
+  activeExpires: bigint("active_expires", { mode: "number" }).notNull(),
+  idleExpires: bigint("idle_expires", { mode: "number" }).notNull(),
+});
 
-export const posts = mysqlTable(
-  "post",
-  {
-    id: bigint("id", { mode: "number" }).primaryKey().autoincrement(),
-    name: varchar("name", { length: 256 }),
-    createdAt: timestamp("created_at")
-      .default(sql`CURRENT_TIMESTAMP`)
-      .notNull(),
-    updatedAt: timestamp("updatedAt").onUpdateNow(),
-  },
-  (example) => ({
-    nameIndex: index("name_idx").on(example.name),
-  })
-);
+export const userAccounts = pgTable("user_accounts", {
+  id: varchar("id", { length: 255 }).primaryKey(), // In the form of <providerId:providerUserId> e.g. google:aodwoaidhawiodh
+  userId: varchar("user_id", { length: 255 }).notNull(),
+  hashedPassword: varchar("hashed_password", {
+    length: 255,
+  }),
+});
