@@ -1,7 +1,10 @@
-import { bigint, pgTable, varchar } from "drizzle-orm/pg-core";
+import { bigint, pgTable, text, varchar } from "drizzle-orm/pg-core";
 
 export const users = pgTable("users", {
   id: varchar("id", { length: 255 }).primaryKey(),
+  email: varchar("email", { length: 100 }).notNull().unique(),
+  name: varchar("name", { length: 100 }),
+  avatarUrl: text("avatar_url"),
 });
 
 export const sessions = pgTable("sessions", {
@@ -9,6 +12,7 @@ export const sessions = pgTable("sessions", {
   userId: varchar("user_id", { length: 255 }).notNull(),
   activeExpires: bigint("active_expires", { mode: "number" }).notNull(),
   idleExpires: bigint("idle_expires", { mode: "number" }).notNull(),
+  accessToken: varchar("access_token", { length: 255 }),
 });
 
 export const userAccounts = pgTable("user_accounts", {

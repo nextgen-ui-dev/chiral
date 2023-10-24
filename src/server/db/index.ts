@@ -11,9 +11,9 @@ interface AuthTables {
 }
 
 export const authTables: AuthTables = {
-  user: schema.users._.name,
-  session: schema.sessions._.name,
-  key: schema.userAccounts._.name,
+  user: "users",
+  session: "sessions",
+  key: "user_accounts",
 };
 
 export const pool = new Pool({ connectionString: env.DATABASE_URL });
