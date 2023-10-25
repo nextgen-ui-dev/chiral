@@ -1,5 +1,4 @@
-import { type User, LuciaError } from "lucia";
-import type { User as LinearUser } from "@linear/sdk";
+import { type User, type Key, LuciaError } from "lucia";
 import { parseCookie } from "lucia/utils";
 import {
   validateOAuth2AuthorizationCode,
@@ -38,7 +37,6 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     return res.status(400).end();
   }
 
-  let viewer: LinearUser;
   try {
     const tokenRes =
       await validateOAuth2AuthorizationCode<LinearAccessTokenRes>(
@@ -58,27 +56,37 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       accessToken: tokenRes.access_token,
     });
 
-    viewer = await linearClient.viewer;
+    const viewer = await linearClient.viewer;
 
     let user: User;
+    let linearKey: Key;
 
-    const linearKey = await auth.getKey(ValidAuthProviders.LINEAR, viewer.id);
-    if (linearKey === null) {
-      user = await auth.createUser({
-        userId: ulid().toString(),
-        key: {
-          providerId: "linear",
-          providerUserId: viewer.id,
-          password: null,
-        },
-        attributes: {
-          email: viewer.email,
-          name: viewer.name,
-          avatar_url: viewer.avatarUrl ?? null,
-        },
-      });
-    } else {
+    checkKey: try {
+      linearKey = await auth.getKey(ValidAuthProviders.LINEAR, viewer.id);
       user = await auth.getUser(linearKey.userId);
+    } catch (e: any) {
+      if (e instanceof LuciaError) {
+        if (e.message === "AUTH_INVALID_KEY_ID") {
+          user = await auth.createUser({
+            userId: ulid().toString(),
+            key: {
+              providerId: "linear",
+              providerUserId: viewer.id,
+              password: null,
+            },
+            attributes: {
+              email: viewer.email,
+              name: viewer.name,
+              avatar_url: viewer.avatarUrl ?? null,
+            },
+          });
+
+          break checkKey;
+        }
+      }
+
+      console.log("Failed to process linear callback:", e);
+      return res.status(500).end();
     }
 
     await auth.invalidateAllUserSessions(user.id);
@@ -95,14 +103,6 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 
     return res.status(302).setHeader("Location", "/").end();
   } catch (e: any) {
-    if (e instanceof LuciaError) {
-      if (e.message === "AUTH_INVALID_KEY_ID") {
-        return res.status(400).end();
-      } else if (e.message === "AUTH_INVALID_SESSION_ID") {
-        return res.status(401).end();
-      }
-    }
-
     if (e instanceof OAuthRequestError) {
       // invalid authorization code
       return res.status(400).end();
