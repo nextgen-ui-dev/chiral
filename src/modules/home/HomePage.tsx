@@ -2,8 +2,13 @@ import { Icon } from "@iconify/react";
 import Head from "next/head";
 import Link from "next/link";
 import { Button } from "~/components/ui/button";
+import { api } from "~/utils/api";
 
 export const HomePage = () => {
+  const { data } = api.user.getSessionInfo.useQuery();
+  // TODO: remove once done with dashboard page
+  console.log(data?.session);
+
   return (
     <>
       <Head>
