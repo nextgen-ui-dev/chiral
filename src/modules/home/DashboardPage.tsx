@@ -1,5 +1,4 @@
 import { LogOut } from "lucide-react";
-import Link from "next/link";
 import { Button } from "~/components/ui/button";
 
 // TODO: create dashboard page
@@ -14,17 +13,19 @@ export const DashboardPage = () => (
         your PRDs and maximize your team&apos;s productivity with Chiral.
       </p>
 
-      <div className="flex flex-col items-center gap-4">
+      <form
+        className="flex flex-col items-center gap-4"
+        method="POST"
+        action="/api/auth/logout"
+      >
         <Button
-          asChild
           className="flex flex-row place-content-center gap-2 bg-primary-dark px-10 py-7 text-base"
+          type="submit"
         >
-          <Link href="/api/auth/login/linear">
-            <LogOut size={24} />
-            Sign Out
-          </Link>
+          <LogOut size={24} />
+          Sign Out
         </Button>
-      </div>
+      </form>
     </div>
   </main>
 );

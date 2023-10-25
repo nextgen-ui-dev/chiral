@@ -4,7 +4,7 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { env } from "~/env.mjs";
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
-  if (req.method !== "GET") return res.status(405);
+  if (req.method !== "GET") return res.status(405).end();
 
   const [url, state] = await createOAuth2AuthorizationUrl(
     "https://linear.app/oauth/authorize",

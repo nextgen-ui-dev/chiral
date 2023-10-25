@@ -18,7 +18,7 @@ interface LinearAccessTokenRes {
 }
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
-  if (req.method !== "GET") return res.status(405);
+  if (req.method !== "GET") return res.status(405).end();
 
   const cookies = parseCookie(req.headers.cookie ?? "");
   const storedState = cookies.linear_oauth_state;
