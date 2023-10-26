@@ -10,7 +10,7 @@ import { LinearClient } from "@linear/sdk";
 import { ValidAuthProviders, auth } from "~/server/auth";
 import { ulid } from "~/lib/ulid";
 import { db } from "~/server/db";
-import { workspaceProviders, workspaces } from "~/server/db/schema";
+import { users, workspaceProviders, workspaces } from "~/server/db/schema";
 import { and, eq } from "drizzle-orm";
 
 interface LinearAccessTokenRes {
@@ -63,7 +63,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     const linearWorkspace = await linearClient.organization;
 
     let user: User;
-    let linearKey: Key;
+    let linearKey: Key | null;
 
     checkKey: try {
       linearKey = await auth.getKey(ValidAuthProviders.LINEAR, viewer.id);
@@ -71,19 +71,44 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     } catch (e: any) {
       if (e instanceof LuciaError) {
         if (e.message === "AUTH_INVALID_KEY_ID") {
-          user = await auth.createUser({
-            userId: ulid().toString(),
-            key: {
-              providerId: "linear",
-              providerUserId: viewer.id,
-              password: null,
-            },
-            attributes: {
-              email: viewer.email,
-              name: viewer.name,
-              avatar_url: viewer.avatarUrl ?? null,
-            },
-          });
+          createUserKey: try {
+            user = await auth.createUser({
+              userId: ulid().toString(),
+              key: {
+                providerId: "linear",
+                providerUserId: viewer.id,
+                password: null,
+              },
+              attributes: {
+                email: viewer.email,
+                name: viewer.name,
+                avatar_url: viewer.avatarUrl ?? null,
+              },
+            });
+          } catch (e: any) {
+            if (typeof e.code === "string" && e.code === "23505") {
+              const existingUser = (
+                await db
+                  .select()
+                  .from(users)
+                  .where(eq(users.email, viewer.email))
+              )[0]!;
+
+              user = await auth.getUser(existingUser.id);
+
+              await auth.createKey({
+                userId: existingUser.id,
+                providerId: ValidAuthProviders.LINEAR,
+                providerUserId: viewer.id,
+                password: null,
+              });
+
+              break createUserKey;
+            }
+
+            console.log("Failed to process linear callback:", e);
+            return res.status(500).end();
+          }
 
           break checkKey;
         }

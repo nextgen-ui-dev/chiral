@@ -6,6 +6,9 @@ import { env } from "~/env.mjs";
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method !== "GET") return res.status(405).end();
 
+  const promptForConsent =
+    typeof req.query.prompt === "string" && req.query.prompt === "consent";
+
   const [url, state] = await createOAuth2AuthorizationUrl(
     "https://linear.app/oauth/authorize",
     {
@@ -21,6 +24,8 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     path: "/",
     maxAge: 60 * 60,
   });
+
+  if (promptForConsent) url.searchParams.set("prompt", "consent");
 
   return res
     .status(302)
