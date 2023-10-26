@@ -9,6 +9,9 @@ import { env } from "~/env.mjs";
 import { LinearClient } from "@linear/sdk";
 import { ValidAuthProviders, auth } from "~/server/auth";
 import { ulid } from "~/lib/ulid";
+import { db } from "~/server/db";
+import { workspaceProviders, workspaces } from "~/server/db/schema";
+import { and, eq } from "drizzle-orm";
 
 interface LinearAccessTokenRes {
   access_token: string;
@@ -57,7 +60,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     });
 
     const viewer = await linearClient.viewer;
-    console.log(await linearClient.organization);
+    const linearWorkspace = await linearClient.organization;
 
     let user: User;
     let linearKey: Key;
@@ -86,6 +89,45 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         }
       }
 
+      console.log("Failed to process linear callback:", e);
+      return res.status(500).end();
+    }
+
+    try {
+      const res = await db
+        .select()
+        .from(workspaces)
+        .where(
+          and(
+            eq(workspaces.userId, user.id),
+            eq(workspaces.providerId, "linear"),
+            eq(workspaces.providerWorkspaceId, linearWorkspace.id),
+          ),
+        )
+        .limit(1);
+
+      if (res.length < 1) {
+        await db.insert(workspaces).values({
+          providerId: "linear",
+          providerWorkspaceId: linearWorkspace.id,
+          userId: user.id,
+          name: linearWorkspace.name,
+        });
+      } else {
+        await db
+          .update(workspaces)
+          .set({
+            name: linearWorkspace.name,
+          })
+          .where(
+            and(
+              eq(workspaces.userId, user.id),
+              eq(workspaces.providerId, "linear"),
+              eq(workspaces.providerWorkspaceId, linearWorkspace.id),
+            ),
+          );
+      }
+    } catch (e: any) {
       console.log("Failed to process linear callback:", e);
       return res.status(500).end();
     }
