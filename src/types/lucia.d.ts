@@ -7,6 +7,7 @@ declare namespace Lucia {
     avatar_url: string | null;
   };
   type DatabaseSessionAttributes = {
+    account_id: string;
     access_token: string | null;
   };
 }

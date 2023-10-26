@@ -63,7 +63,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     const linearWorkspace = await linearClient.organization;
 
     let user: User;
-    let linearKey: Key | null;
+    let linearKey: Key;
 
     checkKey: try {
       linearKey = await auth.getKey(ValidAuthProviders.LINEAR, viewer.id);
@@ -85,6 +85,8 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
                 avatar_url: viewer.avatarUrl ?? null,
               },
             });
+
+            linearKey = await auth.getKey(ValidAuthProviders.LINEAR, viewer.id);
           } catch (e: any) {
             if (typeof e.code === "string" && e.code === "23505") {
               const existingUser = (
@@ -96,7 +98,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 
               user = await auth.getUser(existingUser.id);
 
-              await auth.createKey({
+              linearKey = await auth.createKey({
                 userId: existingUser.id,
                 providerId: ValidAuthProviders.LINEAR,
                 providerUserId: viewer.id,
@@ -157,12 +159,13 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       return res.status(500).end();
     }
 
-    await auth.invalidateAllUserSessions(user.id);
+    await auth.deleteDeadUserSessions(user.id);
     const session = await auth.createSession({
       sessionId: ulid(),
       userId: user.id,
       attributes: {
         access_token: tokenRes.access_token,
+        account_id: linearKey.providerId + ":" + linearKey.providerUserId,
       },
     });
 

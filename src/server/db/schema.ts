@@ -39,6 +39,7 @@ export const sessions = pgTable("sessions", {
   activeExpires: bigint("active_expires", { mode: "number" }).notNull(),
   idleExpires: bigint("idle_expires", { mode: "number" }).notNull(),
   accessToken: varchar("access_token", { length: 255 }),
+  accountId: varchar("account_id", { length: 255 }).notNull(),
 });
 
 export const userAccounts = pgTable("user_accounts", {
