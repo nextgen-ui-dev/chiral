@@ -120,13 +120,15 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       return res.status(500).end();
     }
 
+    const linearAccountId =
+      linearKey.providerId + ":" + linearKey.providerUserId;
     try {
       const res = await db
         .select()
         .from(workspaces)
         .where(
           and(
-            eq(workspaces.userId, user.id),
+            eq(workspaces.accountId, linearAccountId),
             eq(workspaces.providerId, "linear"),
             eq(workspaces.providerWorkspaceId, linearWorkspace.id),
           ),
@@ -137,7 +139,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         await db.insert(workspaces).values({
           providerId: "linear",
           providerWorkspaceId: linearWorkspace.id,
-          userId: user.id,
+          accountId: linearAccountId,
           name: linearWorkspace.name,
         });
       } else {
@@ -148,7 +150,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
           })
           .where(
             and(
-              eq(workspaces.userId, user.id),
+              eq(workspaces.accountId, linearAccountId),
               eq(workspaces.providerId, "linear"),
               eq(workspaces.providerWorkspaceId, linearWorkspace.id),
             ),
@@ -165,7 +167,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       userId: user.id,
       attributes: {
         access_token: tokenRes.access_token,
-        account_id: linearKey.providerId + ":" + linearKey.providerUserId,
+        account_id: linearAccountId,
       },
     });
 
