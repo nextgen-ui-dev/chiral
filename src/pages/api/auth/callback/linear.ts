@@ -57,6 +57,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     });
 
     const viewer = await linearClient.viewer;
+    console.log(await linearClient.organization);
 
     let user: User;
     let linearKey: Key;

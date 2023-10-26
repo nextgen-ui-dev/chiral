@@ -1,4 +1,25 @@
-import { bigint, pgTable, text, varchar } from "drizzle-orm/pg-core";
+import {
+  bigint,
+  pgEnum,
+  pgTable,
+  primaryKey,
+  text,
+  varchar,
+} from "drizzle-orm/pg-core";
+
+export const workspaceProviders = pgEnum("workspace_providers", ["linear"]);
+
+export const workspaces = pgTable(
+  "workspaces",
+  {
+    providerId: workspaceProviders("provider_id").notNull(),
+    providerWorkspaceId: text("provider_workspace_id").notNull(),
+    name: text("name").notNull(),
+  },
+  (workspace) => ({
+    pk: primaryKey(workspace.providerId, workspace.providerWorkspaceId),
+  }),
+);
 
 export const users = pgTable("users", {
   id: varchar("id", { length: 255 }).primaryKey(),
