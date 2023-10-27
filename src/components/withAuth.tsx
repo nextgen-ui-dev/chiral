@@ -17,7 +17,7 @@ export const withAuth: (component: React.FC) => React.FC = (Component) => {
     return isLoading ? (
       <LoadingHero />
     ) : (
-      data?.isAuthenticated && <Component {...props} session={data.session} />
+      data?.isAuthenticated && <Component {...props} />
     );
   };
 };
