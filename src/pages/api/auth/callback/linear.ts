@@ -1,4 +1,4 @@
-import { type User, type Key, LuciaError } from "lucia";
+import { type User, type Key, LuciaError, Session } from "lucia";
 import { parseCookie } from "lucia/utils";
 import {
   validateOAuth2AuthorizationCode,
@@ -10,7 +10,12 @@ import { LinearClient } from "@linear/sdk";
 import { ValidAuthProviders, auth } from "~/server/auth";
 import { ulid } from "~/lib/ulid";
 import { db } from "~/server/db";
-import { users, workspaceProviders, workspaces } from "~/server/db/schema";
+import {
+  sessions,
+  users,
+  workspaceProviders,
+  workspaces,
+} from "~/server/db/schema";
 import { and, eq } from "drizzle-orm";
 
 interface LinearAccessTokenRes {
@@ -152,7 +157,20 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       workspace.providerId + ":" + workspace.providerWorkspaceId;
 
     await auth.deleteDeadUserSessions(user.id);
-    const session = await auth.createSession({
+
+    // Invalidate sessions for the same workspace
+    let session: Session;
+    const result = await db
+      .select()
+      .from(sessions)
+      .where(eq(sessions.workspaceId, workspaceId))
+      .limit(1);
+    if (result.length >= 1) {
+      session = await auth.validateSession(result[0]!.id);
+      await auth.invalidateSession(session.id);
+    }
+
+    session = await auth.createSession({
       sessionId: ulid(),
       userId: user.id,
       attributes: {
