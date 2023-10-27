@@ -120,40 +120,29 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       return res.status(500).end();
     }
 
+    const linearAccountId =
+      linearKey.providerId + ":" + linearKey.providerUserId;
+    let workspace: typeof workspaces.$inferSelect;
     try {
       const res = await db
-        .select()
-        .from(workspaces)
-        .where(
-          and(
-            eq(workspaces.userId, user.id),
-            eq(workspaces.providerId, "linear"),
-            eq(workspaces.providerWorkspaceId, linearWorkspace.id),
-          ),
-        )
-        .limit(1);
-
-      if (res.length < 1) {
-        await db.insert(workspaces).values({
+        .insert(workspaces)
+        .values({
           providerId: "linear",
           providerWorkspaceId: linearWorkspace.id,
-          userId: user.id,
+          accountId: linearAccountId,
           name: linearWorkspace.name,
-        });
-      } else {
-        await db
-          .update(workspaces)
-          .set({
-            name: linearWorkspace.name,
-          })
-          .where(
-            and(
-              eq(workspaces.userId, user.id),
-              eq(workspaces.providerId, "linear"),
-              eq(workspaces.providerWorkspaceId, linearWorkspace.id),
-            ),
-          );
-      }
+        })
+        .onConflictDoUpdate({
+          target: [
+            workspaces.providerId,
+            workspaces.providerWorkspaceId,
+            workspaces.accountId,
+          ],
+          set: { name: linearWorkspace.name },
+        })
+        .returning();
+
+      workspace = res[0]!;
     } catch (e: any) {
       console.log("Failed to process linear callback:", e);
       return res.status(500).end();
@@ -165,14 +154,20 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       userId: user.id,
       attributes: {
         access_token: tokenRes.access_token,
-        account_id: linearKey.providerId + ":" + linearKey.providerUserId,
+        account_id: linearAccountId,
       },
     });
 
     const authRequest = auth.handleRequest({ req, res });
     authRequest.setSession(session);
 
-    return res.status(302).setHeader("Location", "/").end();
+    const workspaceId =
+      workspace.providerId + ":" + workspace.providerWorkspaceId;
+
+    return res
+      .status(302)
+      .setHeader("Location", "/" + workspaceId)
+      .end();
   } catch (e: any) {
     if (e instanceof OAuthRequestError) {
       // invalid authorization code

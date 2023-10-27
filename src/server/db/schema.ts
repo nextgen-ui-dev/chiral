@@ -14,14 +14,14 @@ export const workspaces = pgTable(
   {
     providerId: workspaceProviders("provider_id").notNull(),
     providerWorkspaceId: text("provider_workspace_id").notNull(),
-    userId: varchar("user_id", { length: 255 }).notNull(),
+    accountId: varchar("account_id", { length: 255 }).notNull(),
     name: text("name").notNull(),
   },
   (workspace) => ({
     pk: primaryKey(
       workspace.providerId,
       workspace.providerWorkspaceId,
-      workspace.userId,
+      workspace.accountId,
     ),
   }),
 );
