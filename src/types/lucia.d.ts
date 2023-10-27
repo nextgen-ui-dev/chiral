@@ -8,6 +8,7 @@ declare namespace Lucia {
   };
   type DatabaseSessionAttributes = {
     account_id: string;
+    workspace_id: string;
     access_token: string | null;
   };
 }
