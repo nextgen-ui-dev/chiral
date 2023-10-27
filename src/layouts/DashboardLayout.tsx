@@ -1,3 +1,5 @@
+import axios from "axios";
+import { Check } from "lucide-react";
 import { useRouter } from "next/router";
 import React from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
@@ -13,6 +15,8 @@ export const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const router = useRouter();
+  const { data: sessionData, isLoading: sessionLoading } =
+    api.user.getSessionInfo.useQuery();
   const { data: user, isLoading } = api.user.getCurrentUser.useQuery();
   const { data: workspace, isLoading: workspaceLoading } =
     api.workspace.getCurrentWorkspace.useQuery();
@@ -20,9 +24,19 @@ export const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({
   const { data, isLoading: workspacesLoading } =
     api.workspace.getWorkspaceSessions.useQuery();
 
+  const setWorkspaceSession = async (
+    workspaceId: string,
+    sessionId: string,
+  ) => {
+    await axios.post("/api/auth/update-session", { sessionId, workspaceId });
+    await router.push("/" + workspaceId);
+    router.reload();
+  };
+
   return (
     !isLoading &&
-    !workspaceLoading && (
+    !workspaceLoading &&
+    !sessionLoading && (
       <div className="flex min-h-screen w-full flex-row">
         <nav className="min-h-screen min-w-[20rem] max-w-xs overflow-x-clip border-r-[1px] border-solid border-primary-dark p-4">
           <Popover>
@@ -54,31 +68,54 @@ export const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({
               {!workspacesLoading && (
                 <ul>
                   {data?.map((ws) => {
-                    const expired = ws.sessions === null;
+                    const now = Date.now();
+                    const expired =
+                      ws.sessions === null || ws.sessions.activeExpires < now;
                     const workspaceId =
                       ws.workspaces.providerId +
                       ":" +
                       ws.workspaces.providerWorkspaceId;
+                    const activeWsId =
+                      workspace?.providerId +
+                      ":" +
+                      workspace?.providerWorkspaceId;
 
-                    return (
-                      <li
-                        onClick={() => {
-                          if (expired) {
-                            void router.push(
-                              "/api/auth/login/" +
-                                ws.workspaces.providerId +
-                                "?prompt=consent",
-                            );
-                          } else {
-                          }
-                        }}
+                    return expired ? (
+                      <a
                         key={workspaceId}
-                        className="flex flex-row items-center justify-between rounded-md px-2 py-1 text-sm hover:bg-primary"
+                        href={
+                          "/api/auth/login/" +
+                          ws.workspaces.providerId +
+                          "?prompt=consent"
+                        }
                       >
-                        <p>{ws.workspaces.name}</p>
-                        {expired && (
-                          <p className="text-xs">Session timed out</p>
-                        )}
+                        <li
+                          key={workspaceId}
+                          className="flex flex-row items-center justify-between rounded-md px-2 py-1 text-sm hover:bg-primary"
+                        >
+                          <p>{ws.workspaces.name}</p>
+                          {expired && (
+                            <p className="text-xs">Session timed out</p>
+                          )}
+                        </li>
+                      </a>
+                    ) : (
+                      <li key={workspaceId}>
+                        <button
+                          onClick={() =>
+                            void setWorkspaceSession(
+                              workspaceId,
+                              sessionData!.session!.id,
+                            )
+                          }
+                          className="flex w-full flex-row items-center justify-between rounded-md px-2 py-1 text-sm hover:bg-primary"
+                        >
+                          <p>{ws.workspaces.name}</p>
+                          {workspaceId === activeWsId && <Check size={16} />}
+                          {expired && (
+                            <p className="text-xs">Session timed out</p>
+                          )}
+                        </button>
                       </li>
                     );
                   })}

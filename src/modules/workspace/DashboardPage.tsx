@@ -1,10 +1,33 @@
 import { LogOut } from "lucide-react";
+import { useRouter } from "next/router";
+import axios from "axios";
 import Head from "next/head";
 import { Button } from "~/components/ui/button";
 import { withAuth } from "~/components/withAuth";
 import { DashboardLayout } from "~/layouts/DashboardLayout";
+import { useEffect } from "react";
+import { api } from "~/utils/api";
 
 export const DashboardPage = withAuth(() => {
+  const router = useRouter();
+
+  const { data, isLoading } = api.user.getSessionInfo.useQuery();
+
+  useEffect(() => {
+    if (
+      !isLoading &&
+      data?.session?.workspace_id !== router.asPath.replace("/", "")
+    )
+      void (async function (workspaceId: string, sessionId: string) {
+        await axios.post("/api/auth/update-session", {
+          sessionId,
+          workspaceId,
+        });
+        await router.push("/" + workspaceId);
+        router.reload();
+      })(router.asPath.replace("/", ""), data!.session!.id);
+  }, [data, router, isLoading]);
+
   return (
     <>
       <Head>
