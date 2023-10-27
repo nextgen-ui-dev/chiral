@@ -1,8 +1,6 @@
-import { LogOut } from "lucide-react";
 import { useRouter } from "next/router";
 import axios from "axios";
 import Head from "next/head";
-import { Button } from "~/components/ui/button";
 import { withAuth } from "~/components/withAuth";
 import { DashboardLayout } from "~/layouts/DashboardLayout";
 import { useEffect } from "react";
@@ -48,20 +46,6 @@ export const DashboardPage = withAuth(() => {
               from your PRDs and maximize your team&apos;s productivity with
               Chiral.
             </p>
-
-            <form
-              className="flex flex-col items-center gap-4"
-              method="POST"
-              action="/api/auth/logout"
-            >
-              <Button
-                className="flex flex-row place-content-center gap-2 bg-primary-dark px-10 py-7 text-base"
-                type="submit"
-              >
-                <LogOut size={24} />
-                Sign Out
-              </Button>
-            </form>
           </div>
         </main>
       </DashboardLayout>

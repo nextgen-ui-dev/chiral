@@ -1,5 +1,7 @@
+import { Icon } from "@iconify/react";
 import axios from "axios";
-import { Check } from "lucide-react";
+import { Check, LogOut } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/router";
 import React from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
@@ -64,7 +66,8 @@ export const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({
             <PopoverContent className="ml-4 mt-2 p-2">
               <p className="text-sm text-slate-300">{user?.name}</p>
               <p className="text-xs text-slate-300">{user?.email}</p>
-              <hr className="my-4 border-primary" />
+              <hr className="my-2 border-primary" />
+              <p className="pl-1 text-xs text-slate-300">Workspaces</p>
               {!workspacesLoading && (
                 <ul>
                   {data?.map((ws) => {
@@ -121,6 +124,27 @@ export const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({
                   })}
                 </ul>
               )}
+              <hr className="my-2 border-primary" />
+              <p className="pl-1 text-xs text-slate-300">Manage Workspace</p>
+              <Link href="/api/auth/login/linear?prompt=consent">
+                <button
+                  type="submit"
+                  className="flex w-full flex-row items-center gap-2 rounded-md px-2 py-1 text-sm hover:bg-primary"
+                >
+                  <Icon icon="mingcute:linear-fill" fontSize={16} />
+                  <p>Add Linear Workspace</p>
+                </button>
+              </Link>
+              <hr className="my-2 border-primary" />
+              <form action="/api/auth/logout" method="POST">
+                <button
+                  type="submit"
+                  className="flex w-full flex-row items-center gap-2 rounded-md px-2 py-1 text-sm text-red-600 hover:bg-primary"
+                >
+                  <LogOut size={16} />
+                  <p>Sign Out</p>
+                </button>
+              </form>
             </PopoverContent>
           </Popover>
         </nav>
