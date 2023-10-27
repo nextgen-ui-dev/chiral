@@ -1,6 +1,13 @@
 import { Icon } from "@iconify/react";
 import axios from "axios";
-import { Briefcase, Check, ChevronsUpDown, Files, LogOut } from "lucide-react";
+import {
+  Briefcase,
+  Check,
+  ChevronsUpDown,
+  Files,
+  LogOut,
+  Ticket,
+} from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import React from "react";
@@ -176,6 +183,16 @@ export const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({
                       </CollapsibleTrigger>
                       <CollapsibleContent className="text-sm">
                         <ul className="ml-2 border-l-2 border-l-primary-dark pl-2">
+                          <li>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="flex h-auto w-full flex-row items-center justify-start gap-2 p-2 hover:bg-primary"
+                            >
+                              <Ticket size={16} />
+                              <p className="font-semibold">Issues</p>
+                            </Button>
+                          </li>
                           <li>
                             <Button
                               variant="ghost"
