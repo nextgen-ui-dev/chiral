@@ -1,3 +1,4 @@
+import { useRouter } from "next/router";
 import React from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
@@ -11,9 +12,13 @@ import { api } from "~/utils/api";
 export const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
+  const router = useRouter();
   const { data: user, isLoading } = api.user.getCurrentUser.useQuery();
   const { data: workspace, isLoading: workspaceLoading } =
     api.workspace.getCurrentWorkspace.useQuery();
+
+  const { data, isLoading: workspacesLoading } =
+    api.workspace.getWorkspaceSessions.useQuery();
 
   return (
     !isLoading &&
@@ -46,6 +51,39 @@ export const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({
               <p className="text-sm text-slate-300">{user?.name}</p>
               <p className="text-xs text-slate-300">{user?.email}</p>
               <hr className="my-4 border-primary" />
+              {!workspacesLoading && (
+                <ul>
+                  {data?.map((ws) => {
+                    const expired = ws.sessions === null;
+                    const workspaceId =
+                      ws.workspaces.providerId +
+                      ":" +
+                      ws.workspaces.providerWorkspaceId;
+
+                    return (
+                      <li
+                        onClick={() => {
+                          if (expired) {
+                            void router.push(
+                              "/api/auth/login/" +
+                                ws.workspaces.providerId +
+                                "?prompt=consent",
+                            );
+                          } else {
+                          }
+                        }}
+                        key={workspaceId}
+                        className="flex flex-row items-center justify-between rounded-md px-2 py-1 text-sm hover:bg-primary"
+                      >
+                        <p>{ws.workspaces.name}</p>
+                        {expired && (
+                          <p className="text-xs">Session timed out</p>
+                        )}
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
             </PopoverContent>
           </Popover>
         </nav>
