@@ -148,21 +148,22 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       return res.status(500).end();
     }
 
+    const workspaceId =
+      workspace.providerId + ":" + workspace.providerWorkspaceId;
+
     await auth.deleteDeadUserSessions(user.id);
     const session = await auth.createSession({
       sessionId: ulid(),
       userId: user.id,
       attributes: {
         access_token: tokenRes.access_token,
+        workspace_id: workspaceId,
         account_id: linearAccountId,
       },
     });
 
     const authRequest = auth.handleRequest({ req, res });
     authRequest.setSession(session);
-
-    const workspaceId =
-      workspace.providerId + ":" + workspace.providerWorkspaceId;
 
     return res
       .status(302)

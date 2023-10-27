@@ -11,9 +11,9 @@ export const HomePage = () => {
 
   useEffect(() => {
     if (!isLoading && data?.isAuthenticated) {
-      void router.push("/linear:c033d26d-8e52-49bc-b7fd-daf2c1d076b8");
+      void router.push("/" + data.session?.workspace_id);
     }
-  }, [router, isLoading, data?.isAuthenticated]);
+  }, [router, isLoading, data]);
 
   return (
     <>
