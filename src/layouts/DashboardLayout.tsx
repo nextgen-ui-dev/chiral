@@ -1,11 +1,16 @@
 import { Icon } from "@iconify/react";
 import axios from "axios";
-import { Check, LogOut } from "lucide-react";
+import { Briefcase, Check, ChevronsUpDown, Files, LogOut } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import React from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "~/components/ui/collapsible";
 import {
   Popover,
   PopoverContent,
@@ -23,6 +28,10 @@ export const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({
   const { data: workspace, isLoading: workspaceLoading } =
     api.workspace.getCurrentWorkspace.useQuery();
 
+  // Typescript seems to fail to infer the type sometimes
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  const { data: teamsData, isLoading: teamsLoading } =
+    api.workspace.linear.getTeams.useQuery(); // eslint-disable-line @typescript-eslint/no-unsafe-call
   const { data, isLoading: workspacesLoading } =
     api.workspace.getWorkspaceSessions.useQuery();
 
@@ -38,7 +47,8 @@ export const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({
   return (
     !isLoading &&
     !workspaceLoading &&
-    !sessionLoading && (
+    !sessionLoading &&
+    !teamsLoading && (
       <div className="flex min-h-screen w-full flex-row">
         <nav className="min-h-screen min-w-[20rem] max-w-xs overflow-x-clip border-r-[1px] border-solid border-primary-dark p-4">
           <Popover>
@@ -147,6 +157,53 @@ export const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({
               </form>
             </PopoverContent>
           </Popover>
+          <div className="scroll-m- max-h-full w-full overflow-y-auto">
+            <p className="mb-2 mt-4 pl-1 text-xs text-slate-300">My Teams</p>
+            <ul>
+              {teamsData?.teams.map((team) => {
+                return (
+                  <li key={team.id}>
+                    <Collapsible>
+                      <CollapsibleTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="flex h-auto w-full flex-row items-center justify-between p-2 hover:bg-primary"
+                        >
+                          <p className="text-sm font-semibold">{team.name}</p>
+                          <ChevronsUpDown size={16} />
+                        </Button>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent className="text-sm">
+                        <ul className="ml-2 border-l-2 border-l-primary-dark pl-2">
+                          <li>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="flex h-auto w-full flex-row items-center justify-start gap-2 p-2 hover:bg-primary"
+                            >
+                              <Briefcase size={16} />
+                              <p className="font-semibold">Projects</p>
+                            </Button>
+                          </li>
+                          <li>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="flex h-auto w-full flex-row items-center justify-start gap-2 p-2 hover:bg-primary"
+                            >
+                              <Files size={16} />
+                              <p className="font-semibold">Documents</p>
+                            </Button>
+                          </li>
+                        </ul>
+                      </CollapsibleContent>
+                    </Collapsible>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
         </nav>
         <main className="w-full">{children}</main>
       </div>

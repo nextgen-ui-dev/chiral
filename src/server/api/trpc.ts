@@ -14,6 +14,7 @@ import { ZodError } from "zod";
 
 import { db } from "~/server/db";
 import { auth } from "../auth";
+import { LinearClient } from "@linear/sdk";
 
 /**
  * 1. CONTEXT
@@ -25,6 +26,7 @@ import { auth } from "../auth";
 
 interface CreateContextOptions {
   session: Session | null;
+  linearClient: LinearClient | null;
 }
 
 /**
@@ -40,6 +42,7 @@ interface CreateContextOptions {
 const createInnerTRPCContext = (opts: CreateContextOptions) => {
   return {
     session: opts.session,
+    linearClient: opts.linearClient,
     db,
   };
 };
@@ -56,8 +59,16 @@ export const createTRPCContext = async (opts: CreateNextContextOptions) => {
   const authRequest = auth.handleRequest({ req, res });
   const session = await authRequest.validate();
 
+  let linearClient: LinearClient | null = null;
+  if (session !== null) {
+    if (session.workspace_id.startsWith("linear")) {
+      linearClient = new LinearClient({ accessToken: session.access_token! });
+    }
+  }
+
   return createInnerTRPCContext({
     session,
+    linearClient,
   });
 };
 
@@ -119,6 +130,19 @@ const enforceUserIsAuthed = t.middleware(({ ctx, next }) => {
   });
 });
 
+/** Enforce session is in a linear workspace before procedures */
+const enforceLinearSession = t.middleware(({ ctx, next }) => {
+  if (ctx.linearClient === null) {
+    throw new TRPCError({ code: "UNAUTHORIZED" });
+  }
+
+  return next({
+    ctx: {
+      linearClient: ctx.linearClient,
+    },
+  });
+});
+
 /**
  * Protected (authenticated) procedure
  *
@@ -128,3 +152,5 @@ const enforceUserIsAuthed = t.middleware(({ ctx, next }) => {
  * @see https://trpc.io/docs/procedures
  */
 export const protectedProcedure = t.procedure.use(enforceUserIsAuthed);
+
+export const linearProcedure = protectedProcedure.use(enforceLinearSession);

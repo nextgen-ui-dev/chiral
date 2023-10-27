@@ -1,9 +1,11 @@
-import { createTRPCRouter, protectedProcedure } from "../trpc";
+import { createTRPCRouter, protectedProcedure } from "../../trpc";
 import { sessions, userAccounts, users, workspaces } from "~/server/db/schema";
 import { and, eq, sql } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
+import { linearRouter } from "./linear";
 
 export const workspaceRouter = createTRPCRouter({
+  linear: linearRouter,
   getWorkspaceSessions: protectedProcedure.query(async ({ ctx }) => {
     return await ctx.db
       .select()
