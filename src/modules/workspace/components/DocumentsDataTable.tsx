@@ -41,8 +41,25 @@ const columns: ColumnDef<DocumentData>[] = [
       );
     },
   },
-  { accessorKey: "creator", header: "Author" },
-  { accessorKey: "project", header: "Project" },
+  {
+    accessorKey: "creator",
+    header: "Creator",
+  },
+  {
+    accessorKey: "project",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="flex flex-row items-center gap-2 p-0 font-bold hover:bg-inherit"
+        >
+          Project
+          <ArrowUpDown className="h-4 w-4" />
+        </Button>
+      );
+    },
+  },
 ];
 
 export const DocumentsDataTable: React.FC<{ documents: DocumentData[] }> = ({
