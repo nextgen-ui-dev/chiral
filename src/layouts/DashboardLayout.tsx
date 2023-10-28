@@ -1,23 +1,9 @@
 import { Icon } from "@iconify/react";
-import axios from "axios";
-import {
-  Briefcase,
-  Check,
-  ChevronsUpDown,
-  Files,
-  LogOut,
-  Ticket,
-} from "lucide-react";
+import { Briefcase, Check, Files, LogOut, Ticket } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/router";
 import React from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "~/components/ui/collapsible";
 import {
   Popover,
   PopoverContent,
@@ -29,30 +15,14 @@ import { LoadingHero } from "./LoadingHero";
 export const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const router = useRouter();
-  const { data: sessionData, isLoading: sessionLoading } =
-    api.user.getSessionInfo.useQuery();
   const { data: user, isLoading } = api.user.getCurrentUser.useQuery();
   const { data: workspace, isLoading: workspaceLoading } =
     api.workspace.getCurrentWorkspace.useQuery();
 
-  // Typescript seems to fail to infer the type sometimes
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  const { data: teamsData, isLoading: teamsLoading } =
-    api.workspace.linear.getTeams.useQuery(); // eslint-disable-line @typescript-eslint/no-unsafe-call
   const { data, isLoading: workspacesLoading } =
     api.workspace.getWorkspaceSessions.useQuery();
 
-  const setWorkspaceSession = async (
-    workspaceId: string,
-    sessionId: string,
-  ) => {
-    await axios.post("/api/auth/update-session", { sessionId, workspaceId });
-    await router.push("/" + workspaceId);
-    router.reload();
-  };
-
-  return isLoading || workspaceLoading || sessionLoading || teamsLoading ? (
+  return isLoading || workspaceLoading ? (
     <LoadingHero />
   ) : (
     <div className="flex min-h-screen w-full flex-row">
@@ -120,13 +90,8 @@ export const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({
                     </a>
                   ) : (
                     <li key={workspaceId}>
-                      <button
-                        onClick={() =>
-                          void setWorkspaceSession(
-                            workspaceId,
-                            sessionData!.session!.id,
-                          )
-                        }
+                      <a
+                        href={"/" + workspaceId}
                         className="flex w-full flex-row items-center justify-between rounded-md px-2 py-1 text-sm hover:bg-primary"
                       >
                         <p>{ws.workspaces.name}</p>
@@ -134,7 +99,7 @@ export const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({
                         {expired && (
                           <p className="text-xs">Session timed out</p>
                         )}
-                      </button>
+                      </a>
                     </li>
                   );
                 })}
@@ -163,61 +128,49 @@ export const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({
             </form>
           </PopoverContent>
         </Popover>
-        <div className="scroll-m- max-h-full w-full overflow-y-auto">
-          <p className="mb-2 mt-4 pl-1 text-xs text-slate-300">My Teams</p>
-          <ul>
-            {teamsData?.teams.map((team) => {
-              return (
-                <li key={team.id}>
-                  <Collapsible>
-                    <CollapsibleTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="flex h-auto w-full flex-row items-center justify-between p-2 hover:bg-primary"
-                      >
-                        <p className="text-sm font-semibold">{team.name}</p>
-                        <ChevronsUpDown size={16} />
-                      </Button>
-                    </CollapsibleTrigger>
-                    <CollapsibleContent className="text-sm">
-                      <ul className="ml-2 border-l-2 border-l-primary-dark pl-2">
-                        <li>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="flex h-auto w-full flex-row items-center justify-start gap-2 p-2 hover:bg-primary"
-                          >
-                            <Ticket size={16} />
-                            <p className="font-semibold">Issues</p>
-                          </Button>
-                        </li>
-                        <li>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="flex h-auto w-full flex-row items-center justify-start gap-2 p-2 hover:bg-primary"
-                          >
-                            <Briefcase size={16} />
-                            <p className="font-semibold">Projects</p>
-                          </Button>
-                        </li>
-                        <li>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="flex h-auto w-full flex-row items-center justify-start gap-2 p-2 hover:bg-primary"
-                          >
-                            <Files size={16} />
-                            <p className="font-semibold">Documents</p>
-                          </Button>
-                        </li>
-                      </ul>
-                    </CollapsibleContent>
-                  </Collapsible>
-                </li>
-              );
-            })}
+        <div className="my-2 max-h-full w-full overflow-y-auto">
+          <ul className="text-sm">
+            <li>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="flex h-auto w-full flex-row items-center justify-start gap-2 p-2 hover:bg-primary"
+              >
+                <Briefcase size={16} />
+                <p className="font-semibold">Projects</p>
+              </Button>
+            </li>
+            <li>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="flex h-auto w-full flex-row items-center justify-start gap-2 p-2 hover:bg-primary"
+              >
+                <Ticket size={16} />
+                <p className="font-semibold">Issues</p>
+              </Button>
+            </li>
+            <li>
+              <Button
+                asChild
+                variant="ghost"
+                size="sm"
+                className="flex h-auto w-full flex-row items-center justify-start gap-2 p-2 hover:bg-primary"
+              >
+                <Link
+                  href={
+                    "/" +
+                    workspace?.providerId +
+                    ":" +
+                    workspace?.providerWorkspaceId +
+                    "/documents"
+                  }
+                >
+                  <Files size={16} />
+                  <p className="font-semibold">Documents</p>
+                </Link>
+              </Button>
+            </li>
           </ul>
         </div>
       </nav>
