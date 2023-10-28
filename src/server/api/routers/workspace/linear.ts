@@ -14,6 +14,7 @@ export const linearRouter = createTRPCRouter({
       res.nodes.map(async (doc) => ({
         ...doc,
         project: await doc.project,
+        creator: await doc.creator,
       })),
     );
 

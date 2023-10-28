@@ -6,6 +6,7 @@ import { DashboardLayout } from "~/layouts/DashboardLayout";
 import { useEffect } from "react";
 import { api } from "~/utils/api";
 import { LoadingHero } from "~/layouts/LoadingHero";
+import { DocumentsDataTable } from "./components/DocumentsDataTable";
 
 export const DocumentsPage = withAuth(() => {
   const router = useRouter();
@@ -46,19 +47,7 @@ export const DocumentsPage = withAuth(() => {
         ) : (
           <main className="flex min-h-screen w-full flex-col p-8">
             <h1 className="text-4xl font-bold">Documents</h1>
-            <ul className="my-4 overflow-y-auto">
-              {documentsData?.documents.map((document) => {
-                return (
-                  <li
-                    key={document.id}
-                    className="flex flex-row items-center justify-between"
-                  >
-                    <p>{document.title}</p>
-                    <p>{document.project?.name}</p>
-                  </li>
-                );
-              })}
-            </ul>
+            <DocumentsDataTable documents={documentsData?.documents ?? []} />
           </main>
         )}
       </DashboardLayout>
