@@ -5,11 +5,14 @@ import { withAuth } from "~/components/withAuth";
 import { DashboardLayout } from "~/layouts/DashboardLayout";
 import { useEffect } from "react";
 import { api } from "~/utils/api";
+import { LoadingHero } from "~/layouts/LoadingHero";
 
 export const DocumentsPage = withAuth(() => {
   const router = useRouter();
 
   const { data, isLoading } = api.user.getSessionInfo.useQuery();
+  const { data: documentsData, isLoading: documentsLoading } =
+    api.workspace.linear.getDocuments.useQuery();
 
   useEffect(() => {
     if (
@@ -38,20 +41,26 @@ export const DocumentsPage = withAuth(() => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <DashboardLayout>
-        <main className="flex min-h-screen w-full flex-col items-center justify-center p-8">
-          <div className="flex flex-col items-center text-center">
-            <h1 className="text-5xl font-bold">
-              Automate your product backlogs
-            </h1>
-
-            <p className="text-bold my-6 max-w-xl text-lg text-slate-200 md:text-xl">
-              Generate <span className="font-bold text-primary">clear</span> and{" "}
-              <span className="font-bold text-primary">actionable</span> tickets
-              from your PRDs and maximize your team&apos;s productivity with
-              Chiral.
-            </p>
-          </div>
-        </main>
+        {documentsLoading ? (
+          <LoadingHero />
+        ) : (
+          <main className="flex min-h-screen w-full flex-col p-8">
+            <h1 className="text-4xl font-bold">Documents</h1>
+            <ul className="my-4 overflow-y-auto">
+              {documentsData?.documents.map((document) => {
+                return (
+                  <li
+                    key={document.id}
+                    className="flex flex-row items-center justify-between"
+                  >
+                    <p>{document.title}</p>
+                    <p>{document.project?.name}</p>
+                  </li>
+                );
+              })}
+            </ul>
+          </main>
+        )}
       </DashboardLayout>
     </>
   );

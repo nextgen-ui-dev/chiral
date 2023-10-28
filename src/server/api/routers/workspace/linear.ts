@@ -9,7 +9,14 @@ export const linearRouter = createTRPCRouter({
 
   getDocuments: linearProcedure.query(async ({ ctx }) => {
     const res = await ctx.linearClient.documents();
+    const meta = res.pageInfo;
+    const documents = await Promise.all(
+      res.nodes.map(async (doc) => ({
+        ...doc,
+        project: await doc.project,
+      })),
+    );
 
-    return { meta: res.pageInfo, documents: res.nodes };
+    return { meta, documents };
   }),
 });
