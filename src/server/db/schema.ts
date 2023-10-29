@@ -4,10 +4,40 @@ import {
   pgTable,
   primaryKey,
   text,
+  timestamp,
+  unique,
   varchar,
 } from "drizzle-orm/pg-core";
 
 export const workspaceProviders = pgEnum("workspace_providers", ["linear"]);
+export const chatSenders = pgEnum("chat_senders", ["system", "user"]);
+
+export const documentMessages = pgTable("document_messages", {
+  id: varchar("id", { length: 255 }).primaryKey(),
+  documentId: varchar("document_id", { length: 255 }).notNull(),
+  sender: chatSenders("sender").notNull(),
+  text: text("text").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+});
+
+export const documents = pgTable(
+  "documents",
+  {
+    id: varchar("id", { length: 255 }).primaryKey(),
+    providerDocumentId: text("provider_document_id").notNull(),
+    workspaceId: text("workspace_id").notNull(),
+    userId: varchar("user_id"),
+  },
+  (document) => ({
+    unq: unique().on(
+      document.providerDocumentId,
+      document.workspaceId,
+      document.userId,
+    ),
+  }),
+);
 
 export const workspaces = pgTable(
   "workspaces",
