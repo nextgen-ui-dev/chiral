@@ -42,10 +42,6 @@ const columns: ColumnDef<DocumentData>[] = [
     },
   },
   {
-    accessorKey: "creator",
-    header: "Creator",
-  },
-  {
     accessorKey: "project",
     header: ({ column }) => {
       return (
@@ -59,6 +55,10 @@ const columns: ColumnDef<DocumentData>[] = [
         </Button>
       );
     },
+  },
+  {
+    accessorKey: "creator",
+    header: "Creator",
   },
 ];
 
