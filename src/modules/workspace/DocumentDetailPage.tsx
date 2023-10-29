@@ -7,7 +7,8 @@ import { useEffect } from "react";
 import { api } from "~/utils/api";
 import { LoadingHero } from "~/layouts/LoadingHero";
 import { File } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
+import { SystemChat } from "./components/SystemChat";
+import { UserChat } from "./components/UserChat";
 
 export const DocumentDetailPage = withAuth(() => {
   const router = useRouter();
@@ -72,20 +73,9 @@ export const DocumentDetailPage = withAuth(() => {
                   <p className="text-sm text-slate-300">Project:</p>
                   <p className="text-sm">{documentData?.project?.name}</p>
                 </div>
-                <div className="min-h-[calc(100vh-5rem)] w-full overflow-y-auto py-4">
-                  <div className="flex flex-row items-end gap-3">
-                    <Avatar className="h-8 w-8 bg-white p-[0.5px]">
-                      <AvatarImage src="/favicon.ico" alt="Chiral AI Icon" />
-                      <AvatarFallback>CH</AvatarFallback>
-                    </Avatar>
-                    <div className="relative max-w-full rounded-lg bg-primary p-2 text-sm">
-                      <p>
-                        Greetings! My name is Chiral and I&apos;m here to help
-                        answer questions regarding your document.
-                      </p>
-                      <div className="absolute -bottom-[3px] -left-[5px] h-0 w-0 -rotate-[30deg] border-b-[5px] border-r-[10px] border-t-[5px] border-primary border-b-transparent border-t-transparent" />
-                    </div>
-                  </div>
+                <div className="flex min-h-[calc(100vh-5rem)] w-full flex-col gap-y-5 overflow-y-auto py-6">
+                  <SystemChat text="Greetings! My name is Chiral and I'm here to help answer questions regarding your document." />
+                  <UserChat text="Hi! What's the purpose of this product?" />
                 </div>
               </div>
             </div>
