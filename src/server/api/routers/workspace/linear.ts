@@ -1,4 +1,7 @@
+import { z } from "zod";
 import { createTRPCRouter, linearProcedure } from "../../trpc";
+import { LinearError } from "@linear/sdk";
+import { TRPCError } from "@trpc/server";
 
 export const linearRouter = createTRPCRouter({
   getTeams: linearProcedure.query(async ({ ctx }) => {
@@ -6,6 +9,35 @@ export const linearRouter = createTRPCRouter({
 
     return { meta: res.pageInfo, teams: res.nodes };
   }),
+
+  getDocumentDetail: linearProcedure
+    .input(z.object({ documentId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      try {
+        const res = await ctx.linearClient.document(input.documentId);
+        const document = {
+          ...res,
+          creator: await res.creator,
+          project: await res.project,
+        };
+
+        return document;
+      } catch (e) {
+        if (
+          e instanceof LinearError &&
+          e.message === "Entity not found - Could not find referenced Document."
+        )
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Can't find document",
+          });
+
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Something went wrong",
+        });
+      }
+    }),
 
   getDocuments: linearProcedure.query(async ({ ctx }) => {
     const res = await ctx.linearClient.documents();
