@@ -28,7 +28,7 @@ export const documents = pgTable(
     id: varchar("id", { length: 255 }).primaryKey(),
     providerDocumentId: text("provider_document_id").notNull(),
     workspaceId: text("workspace_id").notNull(),
-    userId: varchar("user_id"),
+    userId: varchar("user_id", { length: 255 }).notNull(),
   },
   (document) => ({
     unq: unique().on(

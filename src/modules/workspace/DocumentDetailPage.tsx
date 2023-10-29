@@ -40,6 +40,17 @@ export const DocumentDetailPage = withAuth(() => {
     error,
   } = api.workspace.linear.getDocumentDetail.useQuery({ documentId });
 
+  const {
+    data: messages,
+    isLoading: messagesLoading,
+    refetch: refetchMessages,
+  } = api.workspace.document.getDocumentMessages.useQuery({
+    providerDocumentId: documentId,
+  });
+
+  const { mutateAsync: createMessage, isLoading: createMessageLoading } =
+    api.workspace.document.createDocumentMessage.useMutation();
+
   useEffect(() => {
     const [workspaceId, documentId] = router.asPath
       .replace("/", "")
@@ -63,8 +74,17 @@ export const DocumentDetailPage = withAuth(() => {
     },
   });
 
-  const submitChat = (values: z.infer<typeof chatFormSchema>) => {
-    console.log(values);
+  const submitChat = async (values: z.infer<typeof chatFormSchema>) => {
+    if (typeof chatForm.formState.errors.text === "undefined") {
+      await createMessage({
+        providerDocumentId: documentId,
+        text: values.text,
+      });
+
+      await refetchMessages();
+
+      chatForm.reset();
+    }
   };
 
   return (
@@ -105,7 +125,17 @@ export const DocumentDetailPage = withAuth(() => {
                 </div>
                 <div className="relative flex min-h-[calc(100vh-5rem)] w-full flex-col gap-y-5 overflow-y-auto py-6">
                   <SystemChat text="Greetings! My name is Chiral and I'm here to help answer questions regarding your document." />
-                  <UserChat text="Hi! What's the purpose of this product?" />
+                  {!messagesLoading &&
+                    messages?.map((message) => {
+                      console.log(message);
+                      if (message.sender == "system") {
+                        return (
+                          <SystemChat key={message.id} text={message.text} />
+                        );
+                      }
+
+                      return <UserChat key={message.id} text={message.text} />;
+                    })}
                   <Form {...chatForm}>
                     <form
                       className="absolute bottom-0 flex w-full flex-row gap-3 bg-background pb-2 pt-4"
@@ -129,6 +159,7 @@ export const DocumentDetailPage = withAuth(() => {
                         )}
                       />
                       <Button
+                        disabled={createMessageLoading}
                         type="submit"
                         size="icon"
                         className="rounded-full p-2"
