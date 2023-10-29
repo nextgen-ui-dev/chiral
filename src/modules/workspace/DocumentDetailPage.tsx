@@ -6,9 +6,25 @@ import { DashboardLayout } from "~/layouts/DashboardLayout";
 import { useEffect } from "react";
 import { api } from "~/utils/api";
 import { LoadingHero } from "~/layouts/LoadingHero";
-import { File } from "lucide-react";
+import { ArrowUp, File } from "lucide-react";
 import { SystemChat } from "./components/SystemChat";
 import { UserChat } from "./components/UserChat";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormMessage,
+} from "~/components/ui/form";
+import { Textarea } from "~/components/ui/textarea";
+import { Button } from "~/components/ui/button";
+
+const chatFormSchema = z.object({
+  text: z.string().min(1, "Text is too short.").max(400, "Text is too long."),
+});
 
 export const DocumentDetailPage = withAuth(() => {
   const router = useRouter();
@@ -40,12 +56,26 @@ export const DocumentDetailPage = withAuth(() => {
       })(workspaceId!, data!.session!.id);
   }, [data, router, isLoading]);
 
-  console.log(documentData);
+  const chatForm = useForm<z.infer<typeof chatFormSchema>>({
+    resolver: zodResolver(chatFormSchema),
+    defaultValues: {
+      text: "",
+    },
+  });
+
+  const submitChat = (values: z.infer<typeof chatFormSchema>) => {
+    console.log(values);
+  };
 
   return (
     <>
       <Head>
-        <title>Chiral</title>
+        <title>
+          {!documentLoading && error === null
+            ? documentData?.title + " | "
+            : ""}
+          Chiral
+        </title>
         <meta name="description" content="Automate your product backlogs" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
@@ -59,7 +89,7 @@ export const DocumentDetailPage = withAuth(() => {
         ) : (
           <main className="flex min-h-screen w-full flex-row">
             <div className="flex min-h-screen w-full flex-col"></div>
-            <div className="border-primary-darker flex min-h-screen min-w-[28rem] max-w-md border-l">
+            <div className="border-primary-darker flex min-h-screen min-w-[28rem] max-w-md border-l-2">
               <div className="bg-primary-darker flex h-20 w-full flex-col gap-2 px-2 py-3">
                 <div className="flex w-full flex-row items-center gap-1">
                   <File className="h-6 w-6" />
@@ -73,9 +103,40 @@ export const DocumentDetailPage = withAuth(() => {
                   <p className="text-sm text-slate-300">Project:</p>
                   <p className="text-sm">{documentData?.project?.name}</p>
                 </div>
-                <div className="flex min-h-[calc(100vh-5rem)] w-full flex-col gap-y-5 overflow-y-auto py-6">
+                <div className="relative flex min-h-[calc(100vh-5rem)] w-full flex-col gap-y-5 overflow-y-auto py-6">
                   <SystemChat text="Greetings! My name is Chiral and I'm here to help answer questions regarding your document." />
                   <UserChat text="Hi! What's the purpose of this product?" />
+                  <Form {...chatForm}>
+                    <form
+                      className="absolute bottom-0 flex w-full flex-row gap-3 bg-background pb-2 pt-4"
+                      onSubmit={chatForm.handleSubmit(submitChat)}
+                    >
+                      <FormField
+                        control={chatForm.control}
+                        name="text"
+                        render={({ field }) => (
+                          <FormItem className="w-full">
+                            <FormControl>
+                              <Textarea
+                                placeholder="What's the scope of this project?"
+                                rows={1}
+                                className="resize-none rounded-md"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <Button
+                        type="submit"
+                        size="icon"
+                        className="rounded-full p-2"
+                      >
+                        <ArrowUp className="h-6 w-6" />
+                      </Button>
+                    </form>
+                  </Form>
                 </div>
               </div>
             </div>
