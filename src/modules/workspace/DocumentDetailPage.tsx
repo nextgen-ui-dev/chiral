@@ -21,6 +21,7 @@ import {
 } from "~/components/ui/form";
 import { Textarea } from "~/components/ui/textarea";
 import { Button } from "~/components/ui/button";
+import { MarkdownDocumentView } from "./components/MarkdownDocumentView";
 
 const chatFormSchema = z.object({
   text: z.string().min(1, "Text is too short.").max(400, "Text is too long."),
@@ -108,9 +109,11 @@ export const DocumentDetailPage = withAuth(() => {
           </main>
         ) : (
           <main className="flex min-h-screen w-full flex-row">
-            <div className="flex min-h-screen w-full flex-col"></div>
-            <div className="border-primary-darker flex min-h-screen min-w-[28rem] max-w-md border-l-2">
-              <div className="bg-primary-darker flex h-20 w-full flex-col gap-2 px-2 py-3">
+            <div className="flex h-screen w-full flex-col">
+              <MarkdownDocumentView markdown={documentData?.content} />
+            </div>
+            <div className="flex min-h-screen min-w-[28rem] max-w-md border-l-2 border-primary-darker">
+              <div className="flex h-20 w-full flex-col gap-2 bg-primary-darker px-2 py-3">
                 <div className="flex w-full flex-row items-center gap-1">
                   <File className="h-6 w-6" />
                   <h1 className="text-xl font-medium">
@@ -127,7 +130,6 @@ export const DocumentDetailPage = withAuth(() => {
                   <SystemChat text="Greetings! My name is Chiral and I'm here to help answer questions regarding your document." />
                   {!messagesLoading &&
                     messages?.map((message) => {
-                      console.log(message);
                       if (message.sender == "system") {
                         return (
                           <SystemChat key={message.id} text={message.text} />
