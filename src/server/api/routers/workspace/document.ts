@@ -22,6 +22,7 @@ export const documentRouter = createTRPCRouter({
                     eq(documents.providerDocumentId, providerDocumentId),
                     eq(documents.workspaceId, ctx.session.workspace_id),
                     eq(documents.userId, ctx.session.user.id),
+                    eq(documents.id, documentMessages.documentId),
                   ),
                 ),
             ),
