@@ -41,6 +41,9 @@ export const DocumentDetailPage = withAuth(() => {
     error,
   } = api.workspace.linear.getDocumentDetail.useQuery({ documentId });
 
+  const { mutateAsync: saveEmbeddings, isSuccess: saveEmbeddingsSuccess } =
+    api.workspace.document.saveMarkdownEmbeddings.useMutation();
+
   const {
     data: messages,
     isLoading: messagesLoading,
@@ -51,6 +54,17 @@ export const DocumentDetailPage = withAuth(() => {
 
   const { mutateAsync: createMessage, isLoading: createMessageLoading } =
     api.workspace.document.createDocumentMessage.useMutation();
+
+  useEffect(() => {
+    void (async function () {
+      if (
+        typeof documentData?.content !== "undefined" &&
+        !saveEmbeddingsSuccess
+      ) {
+        await saveEmbeddings({ markdown: documentData.content });
+      }
+    })();
+  }, [documentData, saveEmbeddingsSuccess, saveEmbeddings]);
 
   useEffect(() => {
     const [workspaceId, documentId] = router.asPath

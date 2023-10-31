@@ -2,9 +2,19 @@ import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "../../trpc";
 import { documentMessages, documents } from "~/server/db/schema";
 import { and, asc, eq, exists } from "drizzle-orm";
+import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
 import { ulid } from "~/lib/ulid";
 
+const markdownSplitter =
+  RecursiveCharacterTextSplitter.fromLanguage("markdown");
+
 export const documentRouter = createTRPCRouter({
+  saveMarkdownEmbeddings: protectedProcedure
+    .input(z.object({ markdown: z.string() }))
+    .mutation(async ({ ctx, input: { markdown } }) => {
+      const documents = await markdownSplitter.createDocuments([markdown]);
+    }),
+
   getDocumentMessages: protectedProcedure
     .input(z.object({ providerDocumentId: z.string() }))
     .query(async ({ ctx, input: { providerDocumentId } }) => {
