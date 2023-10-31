@@ -7,7 +7,7 @@ import { api } from '~/utils/api';
 import { withAuth } from '~/components/withAuth';
 import { DashboardLayout } from '~/layouts/DashboardLayout';
 import { LoadingHero } from '~/layouts/LoadingHero';
-import IssueRow from './IssueRow';
+import IssuesList from './IssuesList';
 import { Issue } from '@linear/sdk';
 
 
@@ -55,7 +55,13 @@ const IssueGeneratorPage = withAuth(() => {
           <main className="flex min-h-screen w-full flex-col p-8">
             <h1 className="text-4xl font-bold">Generated Issues</h1>
 
-            <IssueRow issues={GeneratedIssuesData?.issues ?? []}  />
+            {GeneratedIssuesData ?
+              <IssuesList issues={GeneratedIssuesData?.issues ?? []}  /> 
+              : (
+                <div>
+                  There seems to be a problem while displaying your issues
+                </div>
+              )}
           </main>
         )}
       </DashboardLayout>
