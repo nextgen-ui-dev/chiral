@@ -5,7 +5,7 @@ export const MarkdownDocumentView: React.FC<{ markdown?: string }> = ({
   markdown,
 }) => (
   <Markdown
-    className="flex flex-col gap-y-6 overflow-y-auto px-6 py-4"
+    className="flex flex-col gap-y-6 overflow-y-auto px-12 py-10"
     remarkPlugins={[remarkGfm]}
     components={{
       h1: (props) => <h1 className="text-4xl font-bold">{props.children}</h1>,
