@@ -1,5 +1,5 @@
 import { Icon } from "@iconify/react";
-import { Briefcase, Check, Files, LogOut, Ticket } from "lucide-react";
+import { Briefcase, Check, Files, LogOut, Ticket, FilePlus2 } from "lucide-react";
 import Link from "next/link";
 import React from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
@@ -168,6 +168,27 @@ export const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({
                 >
                   <Files size={16} />
                   <p className="font-semibold">Documents</p>
+                </Link>
+              </Button>
+            </li>
+            <li>
+              <Button
+                asChild
+                variant={"ghost"}
+                size={"sm"}
+                className="flex h-auto w-full flex-row items-center justify-start gap-2 p-2 hover:bg-primary"
+              >
+                <Link
+                  href={
+                    "/" +
+                    workspace?.providerId +
+                    ":" +
+                    workspace?.providerWorkspaceId +
+                    "/generate"
+                  }
+                >
+                  <FilePlus2 size={16} />
+                  <p>Generate Issues</p>
                 </Link>
               </Button>
             </li>
