@@ -1,13 +1,46 @@
+import React, { useEffect } from 'react';
+import axios from 'axios';
+import { useRouter } from 'next/router';
 import Head from 'next/head';
-import React from 'react';
+
+import { api } from '~/utils/api';
 import { withAuth } from '~/components/withAuth';
 import { DashboardLayout } from '~/layouts/DashboardLayout';
 import { LoadingHero } from '~/layouts/LoadingHero';
+import IssueRow from './IssueRow';
+import { Issue } from '@linear/sdk';
+
 
 const IssueGeneratorPage = withAuth(() => {
-  // DUMMY STATE
-  const generatedIssuesLoading = false;
+  const router = useRouter();
 
+  const { data: sessionData, isLoading: sessionLoading } = 
+    api.user.getSessionInfo.useQuery();
+
+  const { data: GeneratedIssuesData, isLoading: generatedIssuesLoading } = 
+    api.workspace.linear.getGeneratedIssues.useQuery();
+
+  useEffect(() => {
+    if (
+      !sessionLoading && 
+      sessionData?.session?.workspace_id !== 
+      router.asPath.replace("/", "").replace("/generate", "")) {
+      // If the session has changed...
+      void(async function (workspaceId: string, sessionId: string) {
+        await axios.post("/api/auth/update-session", {
+          sessionId, 
+          workspaceId
+        });
+
+        await router.push("/" + workspaceId + "/generate");
+        router.reload();
+      })(
+        router.asPath.replace("/", "").replace("/generate", ""),
+        sessionData!.session!.id,
+      );
+    }
+  }, [sessionData, router, sessionLoading]);
+  
   return (
     <>
       <Head>
@@ -21,6 +54,8 @@ const IssueGeneratorPage = withAuth(() => {
         ) : (
           <main className="flex min-h-screen w-full flex-col p-8">
             <h1 className="text-4xl font-bold">Generated Issues</h1>
+
+            <IssueRow issues={GeneratedIssuesData?.issues ?? []}  />
           </main>
         )}
       </DashboardLayout>

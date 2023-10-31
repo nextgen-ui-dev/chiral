@@ -52,4 +52,37 @@ export const linearRouter = createTRPCRouter({
 
     return { meta, documents };
   }),
+
+  getIssues: linearProcedure.query(async ({ ctx }) => {
+    const res = await ctx.linearClient.issues();
+
+    const meta = res.pageInfo;
+
+    const issues = await Promise.all(
+      res.nodes.map(async (issue) => ({
+        ...issue,
+        project: await issue.project,
+        creator: await issue.creator,
+      })),
+    );
+
+    return { meta, issues };
+  }),
+
+  // TEMPORARILY, getGeneratedIssues would be the same as getIssues for test purposes
+  getGeneratedIssues: linearProcedure.query(async ({ ctx }) => {
+    const res = await ctx.linearClient.issues();
+
+    const meta = res.pageInfo;
+
+    const issues = await Promise.all(
+      res.nodes.map(async (issue) => ({
+        ...issue,
+        project: await issue.project,
+        creator: await issue.creator,
+      })),
+    );
+
+    return { meta, issues };
+  }),
 });
