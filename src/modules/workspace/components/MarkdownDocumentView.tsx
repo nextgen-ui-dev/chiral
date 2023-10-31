@@ -22,10 +22,10 @@ export const MarkdownDocumentView: React.FC<{ markdown?: string }> = ({
         </a>
       ),
       ol: (props) => (
-        <ol className="ml-4 list-inside list-decimal">{props.children}</ol>
+        <ol className="ml-6 list-outside list-decimal">{props.children}</ol>
       ),
       ul: (props) => (
-        <ul className="ml-4 list-inside list-disc">{props.children}</ul>
+        <ul className="ml-6 list-outside list-disc">{props.children}</ul>
       ),
       li: (props) => <li>{props.children}</li>,
     }}
