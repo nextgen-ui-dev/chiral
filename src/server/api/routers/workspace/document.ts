@@ -1,4 +1,5 @@
 import { z } from "zod";
+import md5 from "md5";
 import { createTRPCRouter, protectedProcedure } from "../../trpc";
 import { documentMessages, documents } from "~/server/db/schema";
 import { and, asc, eq, exists } from "drizzle-orm";
@@ -26,7 +27,7 @@ export const documentRouter = createTRPCRouter({
       const documents = await markdownSplitter.createDocuments([markdown]);
       const embeddings = await Promise.all(
         documents.flat().map(async (doc) => ({
-          id: ulid().toString(),
+          id: md5(doc.pageContent),
           metadata: {
             lineFrom: doc.metadata.loc.lines.from as number,
             lineTo: doc.metadata.loc.lines.to as number,
