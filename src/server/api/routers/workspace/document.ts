@@ -21,14 +21,24 @@ const embeddingModel = new HuggingFaceTransformersEmbeddings({
 
 export const documentRouter = createTRPCRouter({
   saveMarkdownEmbeddings: protectedProcedure
-    .input(z.object({ markdown: z.string() }))
-    .mutation(async ({ ctx, input: { markdown } }) => {
+    .input(z.object({ markdown: z.string(), documentId: z.string() }))
+    .mutation(async ({ ctx, input: { markdown, documentId } }) => {
       const documents = await markdownSplitter.createDocuments([markdown]);
-      const embeddings = await embeddingModel.embedDocuments(
-        documents.map((doc) => doc.pageContent),
+      const embeddings = await Promise.all(
+        documents.flat().map(async (doc) => ({
+          id: ulid().toString(),
+          metadata: {
+            lineFrom: doc.metadata.loc.lines.from as number,
+            lineTo: doc.metadata.loc.lines.to as number,
+            text: doc.pageContent,
+            documentId,
+          },
+          values: await embeddingModel.embedQuery(doc.pageContent),
+        })),
       );
 
-      console.log(embeddings[0]);
+      const documentIndex = ctx.pinecone.Index("documents");
+      await documentIndex.upsert(embeddings);
     }),
 
   getDocumentMessages: protectedProcedure
