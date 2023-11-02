@@ -1,6 +1,14 @@
 import React from "react";
 import { AlertCircle } from "lucide-react";
 
+enum PriorityLabel {
+  "No Priority",
+  "Urgent",
+  "High",
+  "Medium",
+  "Low"
+};
+
 interface PriorityBarProps {
   priorityLevel: number;
 }
@@ -11,18 +19,25 @@ const PriorityBar = ({
   if (priorityLevel === 0) {
     // No Priority
     return (
-      <div className="gray-400 opacity-50">
+      <div 
+        title={`${PriorityLabel[priorityLevel]}`} 
+        className="gray-400 opacity-50"
+      >
         ---
       </div>
     );
   }
 
   if (priorityLevel === 1) {
-    return <AlertCircle size={40} color="gray-400" />;
+    // Urgent
+    return (
+      <div title={`${PriorityLabel[priorityLevel]}`}>
+        <AlertCircle size={40} color="gray-400" />;
+      </div>);
   }
 
   return (
-    <div className="scale-y-[-1] flex flex-row gap-x-1">
+    <div title={`${PriorityLabel[priorityLevel]}`} className="scale-y-[-1] flex flex-row gap-x-1">
       {/* Bar 1 */}
       <div className={`${priorityLevel > 4 ? "opacity-30" : "opacity-100"} bg-gray-400 w-[5px] h-[10px] rounded-lg`}></div>
       {/* Bar 2 */}

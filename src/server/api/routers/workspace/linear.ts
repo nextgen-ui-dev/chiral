@@ -85,4 +85,24 @@ export const linearRouter = createTRPCRouter({
 
     return { meta, issues };
   }),
+
+  getIssueById: linearProcedure
+    .input(z.object({ issueId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      try {
+        const res = await ctx.linearClient.issue(input.issueId);
+        const issue = {
+          ...res,
+          creator: await res.creator,
+          project: await res.project
+        };
+
+        return issue;
+      } catch (err) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Something went wrong when querying the issue",
+        });
+      }
+    }),
 });
