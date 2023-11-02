@@ -6,7 +6,6 @@ import { createTRPCRouter, protectedProcedure } from "../../trpc";
 import { generatedIssues, generatedIssueDetail } from "~/server/db/schema";
 import { TRPCError } from "@trpc/server";
 
-
 export const issueRouter = createTRPCRouter({
   exportGeneratedIssue: protectedProcedure
     .input(
@@ -52,7 +51,7 @@ export const issueRouter = createTRPCRouter({
         const issueDetail = issueDetailRes[0];
 
         await ctx.linearClient?.createIssue({
-          teamId: issueMetadata?.teamId || "",
+          teamId: issueMetadata?.teamId ?? "",
           title: issueDetail?.title,
           description: issueDetail?.description,
           priority: issueDetail?.priority
