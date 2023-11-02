@@ -150,6 +150,15 @@ export const DocumentChat: React.FC<{ document: DocumentData }> = ({
                           {...field}
                           value={input}
                           onChange={handleInputChange}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" && !e.shiftKey) {
+                              window.document
+                                .getElementById("chat-submit-button")
+                                ?.click();
+
+                              e.preventDefault();
+                            }
+                          }}
                         />
                       </FormControl>
                       <FormMessage />
@@ -157,6 +166,7 @@ export const DocumentChat: React.FC<{ document: DocumentData }> = ({
                   )}
                 />
                 <Button
+                  id="chat-submit-button"
                   disabled={messagesLoading}
                   type="submit"
                   size="icon"
