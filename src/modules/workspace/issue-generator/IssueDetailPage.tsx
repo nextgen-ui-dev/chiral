@@ -2,6 +2,8 @@ import React, { useEffect } from "react";
 import axios from "axios";
 import { useRouter } from "next/router";
 import { api } from "~/utils/api";
+import Head from "next/head";
+import { DashboardLayout } from "~/layouts/DashboardLayout";
 
 const IssueDetailPage = () => {
   const router = useRouter();
@@ -13,7 +15,7 @@ const IssueDetailPage = () => {
   const { data: sessionData, isLoading: sessionIsLoading } = 
     api.user.getSessionInfo.useQuery();
   
-  const { data: IssueDetailData, isLoading: issueIsLoading } = 
+  const { data: IssueDetailData, isLoading: issueIsLoading, error } = 
     api.workspace.linear.getIssueById.useQuery({
       issueId
     }, {
@@ -38,9 +40,38 @@ const IssueDetailPage = () => {
   }, [sessionData, router, sessionIsLoading]);
   
   return (
-    <div>
-      Issue Detail Page for issue no {issueId}
-    </div>
+    <>
+      <Head>
+        <title>
+          {!issueIsLoading && error === null
+            ? IssueDetailData?.title + " | "
+            : ""}
+          Chiral
+        </title>
+        <meta name="description" content="Automate your product backlogs" />
+        <link rel="icon" href="/favicon.ico" />
+      </Head>
+      <DashboardLayout>
+        <div className={`flex flex-row h-screen w-full divide-x`}>
+          {/* Main Editor Space */}
+          <div className={`flex flex-col w-full`}>
+            <div>
+              {/* Issue Title */}
+              {IssueDetailData?.title}
+            </div>
+            <div>
+              {/* Issue Description */}
+              {IssueDetailData?.description}
+            </div>
+          </div>
+
+          {/* Sidebar Space */}
+          <div className={`flex flex-col w-[300px] bg-opacity-50`}>
+            
+          </div>
+        </div>
+      </DashboardLayout>
+    </>
   );
 };
 

@@ -27,7 +27,7 @@ const IssuesList: React.FC<IssuesListProps> = ({
 
   
   return (
-    <div className="flex flex-col gap-y-4">
+    <div className="flex flex-col gap-y-2">
       {issues?.map(issue => {
         if (issue.trashed) {
          return;
@@ -57,8 +57,9 @@ const IssuesList: React.FC<IssuesListProps> = ({
               <div title={`Due ${new Date(issue.dueDate as string).toLocaleDateString()}`} className={`${issue.dueDate && "border border-gray-400 border-opacity-25 p-2 rounded-full"}`}>
                 {issue.dueDate as string}
               </div>
-              <div title={`Created ${issue.createdAt.toLocaleDateString()}, ${issue.createdAt.toLocaleTimeString()}`} className={``}>
-                {/* {new Date(issue.dueDate as string).toLocaleDateString()} */}
+              <div 
+                title={`Created ${issue.createdAt.toLocaleDateString()}, ${issue.createdAt.toLocaleTimeString()}`} 
+                className={``}>
                 {issue.createdAt.toLocaleDateString()}
               </div>
 
