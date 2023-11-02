@@ -22,6 +22,7 @@ import {
 import { Textarea } from "~/components/ui/textarea";
 import { Button } from "~/components/ui/button";
 import { MarkdownDocumentView } from "./components/MarkdownDocumentView";
+import Image from "next/image";
 
 const chatFormSchema = z.object({
   text: z.string().min(1, "Text is too short.").max(400, "Text is too long."),
@@ -42,6 +43,12 @@ export const DocumentDetailPage = withAuth(() => {
   } = api.workspace.linear.getDocumentDetail.useQuery({ documentId });
 
   const {
+    mutateAsync: saveEmbeddings,
+    isLoading: saveEmbeddingsLoading,
+    isSuccess: saveEmbeddingsSuccess,
+  } = api.workspace.document.saveMarkdownEmbeddings.useMutation();
+
+  const {
     data: messages,
     isLoading: messagesLoading,
     refetch: refetchMessages,
@@ -51,6 +58,17 @@ export const DocumentDetailPage = withAuth(() => {
 
   const { mutateAsync: createMessage, isLoading: createMessageLoading } =
     api.workspace.document.createDocumentMessage.useMutation();
+
+  useEffect(() => {
+    void (async function () {
+      if (
+        typeof documentData?.content !== "undefined" &&
+        !saveEmbeddingsSuccess
+      ) {
+        await saveEmbeddings({ markdown: documentData.content, documentId });
+      }
+    })();
+  }, [documentData, saveEmbeddingsSuccess, documentId, saveEmbeddings]);
 
   useEffect(() => {
     const [workspaceId, documentId] = router.asPath
@@ -127,49 +145,70 @@ export const DocumentDetailPage = withAuth(() => {
                   <p className="text-sm">{documentData?.project?.name}</p>
                 </div>
                 <div className="relative flex min-h-[calc(100vh-5rem)] w-full flex-col gap-y-5 overflow-y-auto py-6">
-                  <SystemChat text="Greetings! My name is Chiral and I'm here to help answer questions regarding your document." />
-                  {!messagesLoading &&
-                    messages?.map((message) => {
-                      if (message.sender == "system") {
-                        return (
-                          <SystemChat key={message.id} text={message.text} />
-                        );
-                      }
-
-                      return <UserChat key={message.id} text={message.text} />;
-                    })}
-                  <Form {...chatForm}>
-                    <form
-                      className="absolute bottom-0 flex w-full flex-row gap-3 bg-background pb-2 pt-4"
-                      onSubmit={chatForm.handleSubmit(submitChat)}
-                    >
-                      <FormField
-                        control={chatForm.control}
-                        name="text"
-                        render={({ field }) => (
-                          <FormItem className="w-full">
-                            <FormControl>
-                              <Textarea
-                                placeholder="What's the scope of this project?"
-                                rows={1}
-                                className="resize-none rounded-md"
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
+                  {saveEmbeddingsLoading ? (
+                    <div className="flex h-full w-full animate-pulse flex-col items-center justify-center p-8 text-center">
+                      <Image
+                        src="/favicon.ico"
+                        alt="Chiral Icon"
+                        width={60}
+                        height={60}
                       />
-                      <Button
-                        disabled={createMessageLoading}
-                        type="submit"
-                        size="icon"
-                        className="rounded-full p-2"
-                      >
-                        <ArrowUp className="h-6 w-6" />
-                      </Button>
-                    </form>
-                  </Form>
+                      <p className="mt-4 text-xl text-slate-300">
+                        Loading document context...
+                      </p>
+                    </div>
+                  ) : (
+                    <>
+                      <SystemChat text="Greetings! My name is Chiral and I'm here to help answer questions regarding your document." />
+                      {!messagesLoading &&
+                        messages?.map((message) => {
+                          if (message.sender == "system") {
+                            return (
+                              <SystemChat
+                                key={message.id}
+                                text={message.text}
+                              />
+                            );
+                          }
+
+                          return (
+                            <UserChat key={message.id} text={message.text} />
+                          );
+                        })}
+                      <Form {...chatForm}>
+                        <form
+                          className="absolute bottom-0 flex w-full flex-row gap-3 bg-background pb-2 pt-4"
+                          onSubmit={chatForm.handleSubmit(submitChat)}
+                        >
+                          <FormField
+                            control={chatForm.control}
+                            name="text"
+                            render={({ field }) => (
+                              <FormItem className="w-full">
+                                <FormControl>
+                                  <Textarea
+                                    placeholder="What's the scope of this project?"
+                                    rows={1}
+                                    className="resize-none rounded-md"
+                                    {...field}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <Button
+                            disabled={createMessageLoading}
+                            type="submit"
+                            size="icon"
+                            className="rounded-full p-2"
+                          >
+                            <ArrowUp className="h-6 w-6" />
+                          </Button>
+                        </form>
+                      </Form>
+                    </>
+                  )}
                 </div>
               </div>
             </div>

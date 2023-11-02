@@ -20,6 +20,8 @@ export const env = createEnv({
       .default("development"),
     LINEAR_CLIENT_ID: z.string(),
     LINEAR_CLIENT_SECRET: z.string(),
+    PINECONE_API_KEY: z.string(),
+    PINECONE_ENV: z.string(),
   },
 
   /**
@@ -41,6 +43,8 @@ export const env = createEnv({
     NODE_ENV: process.env.NODE_ENV,
     LINEAR_CLIENT_ID: process.env.LINEAR_CLIENT_ID,
     LINEAR_CLIENT_SECRET: process.env.LINEAR_CLIENT_SECRET,
+    PINECONE_API_KEY: process.env.PINECONE_API_KEY,
+    PINECONE_ENV: process.env.PINECONE_ENV,
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially
