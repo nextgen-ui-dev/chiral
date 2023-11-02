@@ -3,27 +3,18 @@ import md5 from "md5";
 import { createTRPCRouter, protectedProcedure } from "../../trpc";
 import { documentMessages, documents } from "~/server/db/schema";
 import { and, asc, eq, exists } from "drizzle-orm";
-import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
-import { HuggingFaceTransformersEmbeddings } from "langchain/embeddings/hf_transformers";
-
-const markdownSplitter = RecursiveCharacterTextSplitter.fromLanguage(
-  "markdown",
-  {
-    chunkSize: 250,
-    chunkOverlap: 0,
-  },
-);
-
-const embeddingModel = new HuggingFaceTransformersEmbeddings({
-  modelName: "Xenova/bge-large-en-v1.5",
-  maxConcurrency: 10,
-});
+import { markdownSplitter, embeddingModel } from "~/lib/document";
 
 export const documentRouter = createTRPCRouter({
   saveMarkdownEmbeddings: protectedProcedure
     .input(z.object({ markdown: z.string(), documentId: z.string() }))
     .mutation(async ({ ctx, input: { markdown, documentId } }) => {
-      const documents = await markdownSplitter.createDocuments([markdown]);
+      const preppedMarkdown = markdown
+        .replaceAll("\r\n", " ")
+        .replaceAll("\n", " ");
+      const documents = await markdownSplitter.createDocuments([
+        preppedMarkdown,
+      ]);
       const embeddings = await Promise.all(
         documents.flat().map(async (doc) => ({
           id: md5(doc.pageContent),
