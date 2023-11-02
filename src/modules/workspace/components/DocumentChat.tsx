@@ -1,4 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useChat } from "ai/react";
 import Image from "next/image";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -37,22 +38,31 @@ export const DocumentChat: React.FC<{ document: DocumentData }> = ({
     },
   });
 
+  const { data: initialMessages } =
+    api.workspace.document.getDocumentMessages.useQuery({
+      providerDocumentId: document.id,
+    });
+
+  const {
+    messages,
+    isLoading: messagesLoading,
+    input,
+    handleInputChange,
+    handleSubmit,
+  } = useChat({
+    api: "/api/chat/" + document.id,
+    initialMessages: initialMessages?.map((msg) => ({
+      id: msg.id,
+      role: msg.sender === "user" ? "user" : "assistant",
+      content: msg.text,
+    })),
+  });
+
   const {
     mutateAsync: saveEmbeddings,
     isLoading: saveEmbeddingsLoading,
     isSuccess: saveEmbeddingsSuccess,
   } = api.workspace.document.saveMarkdownEmbeddings.useMutation();
-
-  const {
-    data: messages,
-    isLoading: messagesLoading,
-    refetch: refetchMessages,
-  } = api.workspace.document.getDocumentMessages.useQuery({
-    providerDocumentId: document.id,
-  });
-
-  const { mutateAsync: createMessage, isLoading: createMessageLoading } =
-    api.workspace.document.createDocumentMessage.useMutation();
 
   useEffect(() => {
     void (async function () {
@@ -64,19 +74,6 @@ export const DocumentChat: React.FC<{ document: DocumentData }> = ({
       }
     })();
   }, [document, saveEmbeddingsSuccess, saveEmbeddings]);
-
-  const submitChat = async (values: z.infer<typeof chatFormSchema>) => {
-    if (typeof chatForm.formState.errors.text === "undefined") {
-      await createMessage({
-        providerDocumentId: document.id,
-        text: values.text,
-      });
-
-      await refetchMessages();
-
-      chatForm.reset();
-    }
-  };
 
   return (
     <div className="flex h-20 w-full flex-col gap-2 bg-primary-darker px-2 py-3">
@@ -92,7 +89,7 @@ export const DocumentChat: React.FC<{ document: DocumentData }> = ({
         <p className="text-sm text-slate-300">Project:</p>
         <p className="text-sm">{document.project?.name}</p>
       </div>
-      <div className="relative flex min-h-[calc(100vh-5rem)] w-full flex-col gap-y-5 overflow-y-auto py-6">
+      <div className="relative flex min-h-[calc(100vh-5rem)] w-full flex-col">
         {saveEmbeddingsLoading ? (
           <div className="flex h-full w-full animate-pulse flex-col items-center justify-center p-8 text-center">
             <Image
@@ -107,19 +104,23 @@ export const DocumentChat: React.FC<{ document: DocumentData }> = ({
           </div>
         ) : (
           <>
-            <SystemChat text="Greetings! My name is Chiral and I'm here to help answer questions regarding your document." />
-            {!messagesLoading &&
-              messages?.map((message) => {
-                if (message.sender == "system") {
-                  return <SystemChat key={message.id} text={message.text} />;
-                }
+            <div className="flex h-[calc(100vh-5rem)] w-full flex-col gap-y-5 overflow-y-auto pt-6">
+              <SystemChat text="Greetings! My name is Chiral and I'm here to help answer questions regarding your document." />
+              {!messagesLoading &&
+                messages?.map((message) => {
+                  if (message.role == "assistant") {
+                    return (
+                      <SystemChat key={message.id} text={message.content} />
+                    );
+                  }
 
-                return <UserChat key={message.id} text={message.text} />;
-              })}
+                  return <UserChat key={message.id} text={message.content} />;
+                })}
+            </div>
             <Form {...chatForm}>
               <form
-                className="absolute bottom-0 flex w-full flex-row gap-3 bg-background pb-2 pt-4"
-                onSubmit={chatForm.handleSubmit(submitChat)}
+                className="flex w-full flex-row gap-3 bg-background pb-2 pt-4"
+                onSubmit={handleSubmit}
               >
                 <FormField
                   control={chatForm.control}
@@ -132,6 +133,8 @@ export const DocumentChat: React.FC<{ document: DocumentData }> = ({
                           rows={1}
                           className="resize-none rounded-md"
                           {...field}
+                          value={input}
+                          onChange={handleInputChange}
                         />
                       </FormControl>
                       <FormMessage />
@@ -139,7 +142,7 @@ export const DocumentChat: React.FC<{ document: DocumentData }> = ({
                   )}
                 />
                 <Button
-                  disabled={createMessageLoading}
+                  disabled={messagesLoading}
                   type="submit"
                   size="icon"
                   className="rounded-full p-2"
