@@ -2,11 +2,13 @@ import { OpenAIStream, streamToResponse } from "ai";
 import type { Message } from "ai/react";
 import { and, eq } from "drizzle-orm";
 import type { NextApiRequest, NextApiResponse } from "next";
+import { embeddingModel } from "~/lib/document";
 import { ulid } from "~/lib/ulid";
 import { auth } from "~/server/auth";
 import { db } from "~/server/db";
 import { documentMessages, documents } from "~/server/db/schema";
 import { openai } from "~/server/openai";
+import { pinecone } from "~/server/pinecone";
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method !== "POST") return res.status(405).end();
@@ -49,6 +51,30 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 
   const document = documentRes[0]!;
 
+  const lastMessage = messages[messages.length - 1]!;
+
+  // Get document context
+  const questionEmbedding = await embeddingModel.embedQuery(
+    lastMessage.content,
+  );
+
+  const documentIndex = pinecone.Index("documents");
+  const contextRes = await documentIndex.query({
+    topK: 20,
+    vector: questionEmbedding,
+    includeMetadata: true,
+  });
+
+  const goodMatches = contextRes.matches.filter(
+    (match) => typeof match.score === "number" && match.score > 0.5,
+  );
+
+  const contextDocs = goodMatches.map(
+    (match) => (match.metadata as { text: string }).text,
+  );
+
+  const context = contextDocs.join("\n").substring(0, 3000);
+
   const prompt = {
     role: "system",
     content: `Your name is Chiral.
@@ -56,9 +82,10 @@ Chiral is a brand new, powerful artificial intelligence that will help users in 
 Chiral is a well-behaved and well-mannered individual.
 Chiral is always friendly, kind, inspiring, and eager to provide vivid and thoughtful responses to the user about their product documents.
 Chiral is able to accurately answer nearly any question the users will ask about their product documents in conversation.
+Relevant information used to answer the user's question about their documents can be found inside of the CONTEXT BLOCK.
 Chiral will only take into account any information inside the CONTEXT BLOCK below and questions about Chiral.
 START CONTEXT BLOCK
-
+${context}
 END OF CONTEXT BLOCK
 Chiral will take into account any CONTEXT BLOCK that is provided in a conversation.
 If what the user is asking is not in the CONTEXT BLOCK, Chiral will say, "I'm sorry, but it seems what you're looking for isn't in the document.".
@@ -81,8 +108,6 @@ Chiral will not invent anything that is not drawn directly from the context AKA 
         })),
     ],
   });
-
-  const lastMessage = messages[messages.length - 1]!;
 
   const stream = OpenAIStream(response, {
     onStart: async () => {
