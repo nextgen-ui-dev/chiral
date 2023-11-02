@@ -22,6 +22,8 @@ export const env = createEnv({
     LINEAR_CLIENT_SECRET: z.string(),
     PINECONE_API_KEY: z.string(),
     PINECONE_ENV: z.string(),
+    OPENAI_ORGANIZATION_ID: z.string(),
+    OPENAI_API_KEY: z.string(),
   },
 
   /**
@@ -45,6 +47,8 @@ export const env = createEnv({
     LINEAR_CLIENT_SECRET: process.env.LINEAR_CLIENT_SECRET,
     PINECONE_API_KEY: process.env.PINECONE_API_KEY,
     PINECONE_ENV: process.env.PINECONE_ENV,
+    OPENAI_ORGANIZATION_ID: process.env.OPENAI_ORGANIZATION_ID,
+    OPENAI_API_KEY: process.env.OPENAI_API_KEY,
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially
