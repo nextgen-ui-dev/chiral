@@ -38,7 +38,7 @@ export const DocumentChat: React.FC<{ document: DocumentData }> = ({
     },
   });
 
-  const { data: initialMessages } =
+  const { data: initialMessages, isLoading: initialMessagesLoading } =
     api.workspace.document.getDocumentMessages.useQuery({
       providerDocumentId: document.id,
     });
@@ -58,11 +58,8 @@ export const DocumentChat: React.FC<{ document: DocumentData }> = ({
     })),
   });
 
-  const {
-    mutateAsync: saveEmbeddings,
-    isLoading: saveEmbeddingsLoading,
-    isSuccess: saveEmbeddingsSuccess,
-  } = api.workspace.document.saveMarkdownEmbeddings.useMutation();
+  const { mutateAsync: saveEmbeddings, isSuccess: saveEmbeddingsSuccess } =
+    api.workspace.document.saveMarkdownEmbeddings.useMutation();
 
   useEffect(() => {
     void (async function () {
@@ -74,6 +71,21 @@ export const DocumentChat: React.FC<{ document: DocumentData }> = ({
       }
     })();
   }, [document, saveEmbeddingsSuccess, saveEmbeddings]);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const messagesContainer = window.document.getElementById("messages");
+      if (
+        typeof messagesContainer !== "undefined" &&
+        messagesContainer !== null
+      ) {
+        messagesContainer.scrollTo({
+          top: messagesContainer.scrollHeight,
+          behavior: "smooth",
+        });
+      }
+    }
+  }, [messages]);
 
   return (
     <div className="flex h-20 w-full flex-col gap-2 bg-primary-darker px-2 py-3">
@@ -90,7 +102,7 @@ export const DocumentChat: React.FC<{ document: DocumentData }> = ({
         <p className="text-sm">{document.project?.name}</p>
       </div>
       <div className="relative flex min-h-[calc(100vh-5rem)] w-full flex-col">
-        {saveEmbeddingsLoading ? (
+        {initialMessagesLoading ? (
           <div className="flex h-full w-full animate-pulse flex-col items-center justify-center p-8 text-center">
             <Image
               src="/favicon.ico"
@@ -98,24 +110,27 @@ export const DocumentChat: React.FC<{ document: DocumentData }> = ({
               width={60}
               height={60}
             />
-            <p className="mt-4 text-xl text-slate-300">
-              Loading document context...
-            </p>
+            <p className="mt-4 text-xl text-slate-300">Loading chats...</p>
           </div>
         ) : (
           <>
-            <div className="flex h-[calc(100vh-5rem)] w-full flex-col gap-y-5 overflow-y-auto pt-6">
+            <div
+              id="messages"
+              className="flex h-[calc(100vh-5rem)] w-full flex-col gap-y-5 overflow-y-auto pt-6"
+            >
               <SystemChat text="Greetings! My name is Chiral and I'm here to help answer questions regarding your document." />
-              {!messagesLoading &&
-                messages?.map((message) => {
-                  if (message.role == "assistant") {
-                    return (
-                      <SystemChat key={message.id} text={message.content} />
-                    );
-                  }
+              {messages?.map((message) => {
+                if (message.role == "assistant") {
+                  return <SystemChat key={message.id} text={message.content} />;
+                }
 
-                  return <UserChat key={message.id} text={message.content} />;
-                })}
+                return <UserChat key={message.id} text={message.content} />;
+              })}
+              {messagesLoading && (
+                <p className="animate-pulse self-start pl-1 text-sm text-slate-400">
+                  Chiral is typing...
+                </p>
+              )}
             </div>
             <Form {...chatForm}>
               <form
