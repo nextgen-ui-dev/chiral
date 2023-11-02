@@ -10,6 +10,21 @@ export const linearRouter = createTRPCRouter({
     return { meta: res.pageInfo, teams: res.nodes };
   }),
 
+  getTeamById: linearProcedure
+    .input(z.object({ teamId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      try {
+        const team = await ctx.linearClient.team(input.teamId);
+        
+        return team;
+      } catch (err) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Something went wrong when querying the team"
+        });
+      }
+  }),
+
   getDocumentDetail: linearProcedure
     .input(z.object({ documentId: z.string() }))
     .query(async ({ ctx, input }) => {
