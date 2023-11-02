@@ -1,7 +1,7 @@
 import React from "react";
 import { Issue, User, Project } from "@linear/sdk";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
-
+import PriorityBar from "./PriorityBar";
 
 type IssueData = Issue & {
   creator: User | undefined;
@@ -17,24 +17,30 @@ const IssuesList: React.FC<IssuesListProps> = ({
 }) => {
   console.log("Issues", issues);
   return (
-    <div>
+    <div className="flex flex-col gap-y-4">
       {issues?.map(issue => {
         return (
           <div 
             key={issue.id}
-            className={"w-full flex flex-row bg-gray-500 bg-opacity-50 text-white font-semibold justify-between"}
+            className={"w-full text-sm rounded-md px-4 py-2 min-h-[60px] flex flex-row border border-gray-400 border-opacity-50 hover:bg-gray-500 hover:bg-opacity-20 text-white font-semibold justify-between items-center"}
           >
-            <div className="flex flex-row">
-              {issue.priority}
+            <div className="flex flex-row gap-x-4 items-center">
+              <PriorityBar priorityLevel={issue.priority} />
               {issue.title}
             </div>
-            <div className="flex flex-row">
-              {issue.project?.name}
-              {issue.dueDate as string}
-              {/* {new Date(issue.dueDate as string).toLocaleDateString()} */}
-              {issue.createdAt.toLocaleDateString()}
+            <div className="flex flex-row gap-x-4 items-center">
+              <div className={`${issue.project?.name && "border border-gray-400 border-opacity-25 py-2 px-3 rounded-full"}`}>
+                {issue.project?.name}
+              </div>
+              <div className={`${issue.dueDate && "border border-gray-400 border-opacity-25 p-2 rounded-full"}`}>
+                {issue.dueDate as string}
+              </div>
+              <div className={`${issue.createdAt && "border border-gray-400 border-opacity-25 p-2 rounded-full"}`}>
+                {/* {new Date(issue.dueDate as string).toLocaleDateString()} */}
+                {issue.createdAt.toLocaleDateString()}
+              </div>
 
-              <Avatar className="h-7 w-7">
+              <Avatar className="h-8 w-8">
                 <AvatarImage
                   src={issue.creator?.avatarUrl ?? ""}
                   alt={issue.creator?.name + "avatar"}

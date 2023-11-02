@@ -18,7 +18,9 @@ const IssueGeneratorPage = withAuth(() => {
     api.user.getSessionInfo.useQuery();
 
   const { data: GeneratedIssuesData, isLoading: generatedIssuesLoading } = 
-    api.workspace.linear.getGeneratedIssues.useQuery();
+    api.workspace.linear.getGeneratedIssues.useQuery(undefined, {
+      refetchOnWindowFocus: false
+    });
 
   useEffect(() => {
     if (
@@ -54,6 +56,7 @@ const IssueGeneratorPage = withAuth(() => {
         ) : (
           <main className="flex min-h-screen w-full flex-col p-8">
             <h1 className="text-4xl font-bold">Generated Issues</h1>
+            <div className='py-4'></div>
 
             {GeneratedIssuesData ?
               <IssuesList issues={GeneratedIssuesData?.issues ?? []}  /> 
