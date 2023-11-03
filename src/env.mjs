@@ -24,6 +24,10 @@ export const env = createEnv({
     PINECONE_ENV: z.string(),
     OPENAI_ORGANIZATION_ID: z.string(),
     OPENAI_API_KEY: z.string(),
+    ASTRA_DB_ID: z.string(),
+    ASTRA_CLIENT_ID: z.string(),
+    ASTRA_CLIENT_SECRET: z.string(),
+    ASTRA_SCB_PATH: z.string(),
   },
 
   /**
@@ -49,6 +53,10 @@ export const env = createEnv({
     PINECONE_ENV: process.env.PINECONE_ENV,
     OPENAI_ORGANIZATION_ID: process.env.OPENAI_ORGANIZATION_ID,
     OPENAI_API_KEY: process.env.OPENAI_API_KEY,
+    ASTRA_DB_ID: process.env.ASTRA_DB_ID,
+    ASTRA_CLIENT_ID: process.env.ASTRA_CLIENT_ID,
+    ASTRA_CLIENT_SECRET: process.env.ASTRA_CLIENT_SECRET,
+    ASTRA_SCB_PATH: process.env.ASTRA_SCB_PATH,
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially
