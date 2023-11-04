@@ -4,6 +4,7 @@ import { createTRPCRouter, protectedProcedure } from "../../trpc";
 import { documentMessages, documents } from "~/server/db/schema";
 import { and, asc, eq, exists } from "drizzle-orm";
 import { markdownSplitter, embeddingModel } from "~/lib/document";
+import type { TypedArray } from "@xenova/transformers";
 
 export const documentRouter = createTRPCRouter({
   saveMarkdownEmbeddings: protectedProcedure
@@ -15,6 +16,7 @@ export const documentRouter = createTRPCRouter({
       const documents = await markdownSplitter.createDocuments([
         preppedMarkdown,
       ]);
+
       const embeddings = await Promise.all(
         documents.flat().map(async (doc) => ({
           id: md5(doc.pageContent),
@@ -28,8 +30,33 @@ export const documentRouter = createTRPCRouter({
         })),
       );
 
-      const documentIndex = ctx.pinecone.Index("documents");
-      await documentIndex.upsert(embeddings);
+      const now = new Date();
+      const queries: {
+        query: string;
+        params: (string | number | TypedArray | Date)[];
+      }[] = [];
+
+      for (const embedding of embeddings) {
+        queries.push({
+          query:
+            "INSERT INTO document_embeddings (id, document_id, line_from, line_to, text, embedding, created_at) VALUES (?, ?, ?, ?, ?, ?, ?) IF NOT EXISTS",
+          params: [
+            embedding.id,
+            embedding.metadata.documentId,
+            embedding.metadata.lineFrom,
+            embedding.metadata.lineTo,
+            embedding.metadata.text,
+            new Float32Array(embedding.values),
+            now,
+          ],
+        });
+      }
+
+      try {
+        await ctx.astra.batch(queries, { prepare: true });
+      } catch (error) {
+        console.log(error);
+      }
     }),
 
   getDocumentMessages: protectedProcedure

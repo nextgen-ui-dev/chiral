@@ -12,21 +12,32 @@ export const astra = new Client({
   keyspace: env.ASTRA_KEYSPACE,
 });
 
-// Create document embeddings table and connect to astra DB
 void (async function () {
   try {
     await astra.connect();
 
+    // Create document embeddings table
     await astra.execute(`
 CREATE TABLE IF NOT EXISTS document_embeddings (
-  id TEXT PRIMARY KEY,
+  id TEXT,
   document_id TEXT,
   line_from INT,
   line_to INT,
   text TEXT,
   embedding VECTOR<FLOAT, 1024>,
+  created_at TIMESTAMP,
+
+  PRIMARY KEY(document_id, id)
 )
 `);
+
+    // Create index on embeddings
+    await astra.execute(`
+CREATE CUSTOM INDEX IF NOT EXISTS
+ON document_embeddings(embedding)
+USING 'StorageAttachedIndex'
+WITH OPTIONS = {'similarity_function': 'COSINE'};
+    `);
   } catch (error) {
     console.log(error);
     await astra.shutdown();
