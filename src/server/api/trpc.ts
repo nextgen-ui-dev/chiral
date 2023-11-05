@@ -14,7 +14,6 @@ import { ZodError } from "zod";
 
 import { db } from "~/server/db";
 import { astra } from "~/server/astra";
-import { pinecone } from "~/server/pinecone";
 import { openai } from "~/server/openai";
 import { auth } from "../auth";
 import { LinearClient } from "@linear/sdk";
@@ -48,7 +47,6 @@ const createInnerTRPCContext = (opts: CreateContextOptions) => {
     linearClient: opts.linearClient,
     db,
     astra,
-    pinecone,
     openai,
   };
 };
