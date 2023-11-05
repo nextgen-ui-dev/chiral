@@ -4,11 +4,11 @@ import { and, eq } from "drizzle-orm";
 import type { NextApiRequest, NextApiResponse } from "next";
 import { embeddingModel } from "~/lib/document";
 import { ulid } from "~/lib/ulid";
+import { astra } from "~/server/astra";
 import { auth } from "~/server/auth";
 import { db } from "~/server/db";
 import { documentMessages, documents } from "~/server/db/schema";
 import { openai } from "~/server/openai";
-import { pinecone } from "~/server/pinecone";
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method !== "POST") return res.status(405).end();
@@ -54,26 +54,40 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const lastMessage = messages[messages.length - 1]!;
 
   // Get document context
-  const questionEmbedding = await embeddingModel.embedQuery(
-    lastMessage.content,
+  const questionEmbedding = new Float32Array(
+    await embeddingModel.embedQuery(lastMessage.content),
   );
 
-  const documentIndex = pinecone.Index("documents");
-  const contextRes = await documentIndex.query({
-    topK: 20,
-    vector: questionEmbedding,
-    includeMetadata: true,
-  });
-
-  const goodMatches = contextRes.matches.filter(
-    (match) => typeof match.score === "number" && match.score > 0.5,
+  const maxTimestampRes = await astra.execute(
+    `
+  SELECT created_at AS most_recent_created_at
+  FROM document_embeddings
+  WHERE document_id = ?
+  LIMIT 1
+  `,
+    [document.id],
+    { prepare: true },
   );
 
-  const contextDocs = goodMatches.map(
-    (match) => (match.metadata as { text: string }).text,
+  const maxTimestamp = maxTimestampRes.rows[0]?.get(
+    "most_recent_created_at",
+  ) as Date;
+
+  const docEmbeddingRes = await astra.execute(
+    `
+  SELECT document_id, id, text, created_at, similarity_cosine(embedding, ?) AS similarity
+  FROM document_embeddings
+  WHERE document_id = ? AND created_at = ?
+  ORDER BY embedding ANN OF ? LIMIT 20
+  `,
+    [questionEmbedding, document.id, maxTimestamp, questionEmbedding],
+    { prepare: true },
   );
 
-  const context = contextDocs.join("\n").substring(0, 3000);
+  const context = docEmbeddingRes.rows
+    .map((doc) => doc.get("text") as string)
+    .join("\n")
+    .substring(0, 3000);
 
   const prompt = {
     role: "system",
@@ -100,12 +114,10 @@ Chiral will not invent anything that is not drawn directly from the context AKA 
     stream: true,
     messages: [
       prompt as Message,
-      ...messages
-        .filter((msg) => msg.role === "user")
-        .map((msg) => ({
-          role: msg.role,
-          content: msg.content,
-        })),
+      ...messages.map((msg) => ({
+        role: msg.role,
+        content: msg.content,
+      })),
     ],
   });
 
