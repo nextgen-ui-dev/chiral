@@ -27,14 +27,14 @@ CREATE TABLE IF NOT EXISTS document_embeddings (
   embedding VECTOR<FLOAT, 1024>,
   created_at TIMESTAMP,
 
-  PRIMARY KEY(document_id, id)
-)
+  PRIMARY KEY((document_id), created_at, id)
+) WITH CLUSTERING ORDER BY (created_at DESC, id DESC)
 `);
 
     // Create index on embeddings
     await astra.execute(`
 CREATE CUSTOM INDEX IF NOT EXISTS
-ON document_embeddings(embedding)
+ON document_embeddings (embedding) 
 USING 'StorageAttachedIndex'
 WITH OPTIONS = {'similarity_function': 'COSINE'};
     `);
