@@ -10,6 +10,21 @@ export const linearRouter = createTRPCRouter({
     return { meta: res.pageInfo, teams: res.nodes };
   }),
 
+  getTeamById: linearProcedure
+    .input(z.object({ teamId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      try {
+        const team = await ctx.linearClient.team(input.teamId);
+        
+        return team;
+      } catch (err) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Something went wrong when querying the team"
+        });
+      }
+  }),
+
   getDocumentDetail: linearProcedure
     .input(z.object({ documentId: z.string() }))
     .query(async ({ ctx, input }) => {
@@ -85,4 +100,24 @@ export const linearRouter = createTRPCRouter({
 
     return { meta, issues };
   }),
+
+  getIssueById: linearProcedure
+    .input(z.object({ issueId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      try {
+        const res = await ctx.linearClient.issue(input.issueId);
+        const issue = {
+          ...res,
+          creator: await res.creator,
+          project: await res.project
+        };
+
+        return issue;
+      } catch (err) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Something went wrong when querying the issue",
+        });
+      }
+    }),
 });
