@@ -2,6 +2,7 @@ import { z } from "zod";
 import { createTRPCRouter, linearProcedure } from "../../trpc";
 import { LinearError } from "@linear/sdk";
 import { TRPCError } from "@trpc/server";
+import { Issue, User, Project } from "@linear/sdk";
 
 export const linearRouter = createTRPCRouter({
   getTeams: linearProcedure.query(async ({ ctx }) => {
@@ -91,7 +92,7 @@ export const linearRouter = createTRPCRouter({
     const meta = res.pageInfo;
 
     const issues = await Promise.all(
-      res.nodes.map(async (issue) => ({
+      res.nodes.map(async (issue: Issue) => ({
         ...issue,
         project: await issue.project,
         creator: await issue.creator,

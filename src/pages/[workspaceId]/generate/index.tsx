@@ -1,6 +1,6 @@
 import type { NextPage } from "next";
-import IssueGeneratorPage from "~/modules/workspace/issue-generator/IssueGeneratorPage";
+import GeneratedIssuesPage from "~/modules/workspace/issue-generator/GeneratedIssuesPage";
 
-const IssueGenerator: NextPage = () => <IssueGeneratorPage />;
+const IssueGenerator: NextPage = () => <GeneratedIssuesPage />;
 
 export default IssueGenerator;

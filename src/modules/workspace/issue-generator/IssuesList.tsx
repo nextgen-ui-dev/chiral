@@ -1,21 +1,17 @@
 import React from "react";
-import Router, { useRouter } from "next/router";
-import { Issue, User, Project } from "@linear/sdk";
+import { useRouter } from "next/router";
+import type { Issue, User, Project } from "@linear/sdk";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 
 import PriorityBar from "./PriorityBar";
-// import IssueRowItem from "./IssueRowItem";
 
-type IssueData = Issue & {
+type IssueData = Pick<Issue, "id" | "priority" | "identifier" | "title" 
+                      | "dueDate" | "createdAt" | "trashed"> & {
   creator: User | undefined;
   project: Project | undefined;
 }
 
-type IssuesListProps = {
-  issues: IssueData[] | undefined;
-};
-
-const IssuesList: React.FC<IssuesListProps> = ({
+const IssuesList: React.FC<{ issues: IssueData[]}> = ({
   issues
 }) => {
   const router = useRouter();
@@ -28,7 +24,7 @@ const IssuesList: React.FC<IssuesListProps> = ({
   
   return (
     <div className="flex flex-col gap-y-2">
-      {issues?.map(issue => {
+      {issues?.map((issue) => {
         if (issue.trashed) {
          return;
         }
