@@ -114,12 +114,10 @@ Chiral will not invent anything that is not drawn directly from the context AKA 
     stream: true,
     messages: [
       prompt as Message,
-      ...messages
-        .filter((msg) => msg.role === "user")
-        .map((msg) => ({
-          role: msg.role,
-          content: msg.content,
-        })),
+      ...messages.map((msg) => ({
+        role: msg.role,
+        content: msg.content,
+      })),
     ],
   });
 
