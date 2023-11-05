@@ -118,7 +118,7 @@ export const DocumentChat: React.FC<{ document: DocumentData }> = ({
               id="messages"
               className="flex h-[calc(100vh-5rem)] w-full flex-col gap-y-5 overflow-y-auto pt-6"
             >
-              <SystemChat text="Greetings! My name is Chiral and I'm here to help answer questions regarding your document." />
+              <SystemChat text="Greetings. My name is Chiral and I'm here to help you understand your product documents. How can I assist you today?" />
               {messages?.map((message) => {
                 if (message.role == "assistant") {
                   return <SystemChat key={message.id} text={message.content} />;
@@ -150,6 +150,15 @@ export const DocumentChat: React.FC<{ document: DocumentData }> = ({
                           {...field}
                           value={input}
                           onChange={handleInputChange}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" && !e.shiftKey) {
+                              window.document
+                                .getElementById("chat-submit-button")
+                                ?.click();
+
+                              e.preventDefault();
+                            }
+                          }}
                         />
                       </FormControl>
                       <FormMessage />
@@ -157,6 +166,7 @@ export const DocumentChat: React.FC<{ document: DocumentData }> = ({
                   )}
                 />
                 <Button
+                  id="chat-submit-button"
                   disabled={messagesLoading}
                   type="submit"
                   size="icon"
