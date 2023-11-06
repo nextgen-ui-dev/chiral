@@ -1,8 +1,7 @@
 import { z } from "zod";
 import { createTRPCRouter, linearProcedure } from "../../trpc";
-import { LinearError } from "@linear/sdk";
+import { LinearError, type Issue } from "@linear/sdk";
 import { TRPCError } from "@trpc/server";
-import { Issue, User, Project } from "@linear/sdk";
 
 export const linearRouter = createTRPCRouter({
   getTeams: linearProcedure.query(async ({ ctx }) => {
@@ -16,15 +15,15 @@ export const linearRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       try {
         const team = await ctx.linearClient.team(input.teamId);
-        
+
         return team;
       } catch (err) {
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Something went wrong when querying the team"
+          message: "Something went wrong when querying the team",
         });
       }
-  }),
+    }),
 
   getDocumentDetail: linearProcedure
     .input(z.object({ documentId: z.string() }))
@@ -110,7 +109,7 @@ export const linearRouter = createTRPCRouter({
         const issue = {
           ...res,
           creator: await res.creator,
-          project: await res.project
+          project: await res.project,
         };
 
         return issue;

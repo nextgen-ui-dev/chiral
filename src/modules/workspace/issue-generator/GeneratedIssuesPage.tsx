@@ -1,36 +1,36 @@
-import React, { useEffect } from 'react';
-import axios from 'axios';
-import { useRouter } from 'next/router';
-import Head from 'next/head';
+import React, { useEffect } from "react";
+import axios from "axios";
+import { useRouter } from "next/router";
+import Head from "next/head";
 
-import { api } from '~/utils/api';
-import { withAuth } from '~/components/withAuth';
-import { DashboardLayout } from '~/layouts/DashboardLayout';
-import { LoadingHero } from '~/layouts/LoadingHero';
-import IssuesList from './IssuesList';
-import { Issue } from '@linear/sdk';
+import { api } from "~/utils/api";
+import { withAuth } from "~/components/withAuth";
+import { DashboardLayout } from "~/layouts/DashboardLayout";
+import { LoadingHero } from "~/layouts/LoadingHero";
+import IssuesList from "./IssuesList";
 
 const GeneratedIssuesPage = withAuth(() => {
   const router = useRouter();
 
-  const { data: sessionData, isLoading: sessionLoading } = 
+  const { data: sessionData, isLoading: sessionLoading } =
     api.user.getSessionInfo.useQuery();
 
-  const { data: GeneratedIssuesData, isLoading: generatedIssuesLoading } = 
+  const { data: GeneratedIssuesData, isLoading: generatedIssuesLoading } =
     api.workspace.linear.getGeneratedIssues.useQuery(undefined, {
-      refetchOnWindowFocus: false
+      refetchOnWindowFocus: false,
     });
 
   useEffect(() => {
     if (
-      !sessionLoading && 
-      sessionData?.session?.workspace_id !== 
-      router.asPath.replace("/", "").replace("/generate", "")) {
+      !sessionLoading &&
+      sessionData?.session?.workspace_id !==
+        router.asPath.replace("/", "").replace("/generate", "")
+    ) {
       // If the session has changed...
-      void(async function (workspaceId: string, sessionId: string) {
+      void (async function (workspaceId: string, sessionId: string) {
         await axios.post("/api/auth/update-session", {
-          sessionId, 
-          workspaceId
+          sessionId,
+          workspaceId,
         });
 
         await router.push("/" + workspaceId + "/generate");
@@ -41,7 +41,7 @@ const GeneratedIssuesPage = withAuth(() => {
       );
     }
   }, [sessionData, router, sessionLoading]);
-  
+
   return (
     <>
       <Head>
@@ -55,20 +55,20 @@ const GeneratedIssuesPage = withAuth(() => {
         ) : (
           <main className="flex min-h-screen w-full flex-col p-8">
             <h1 className="text-4xl font-bold">Generated Issues</h1>
-            <div className='py-4'></div>
+            <div className="py-4"></div>
 
-            {GeneratedIssuesData ?
-              <IssuesList issues={GeneratedIssuesData?.issues ?? []}  /> 
-              : (
-                <div>
-                  There seems to be a problem while displaying your issues
-                </div>
-              )}
+            {GeneratedIssuesData ? (
+              <IssuesList issues={GeneratedIssuesData?.issues ?? []} />
+            ) : (
+              <div>
+                There seems to be a problem while displaying your issues
+              </div>
+            )}
           </main>
         )}
       </DashboardLayout>
     </>
-  )
+  );
 });
 
 export default GeneratedIssuesPage;
