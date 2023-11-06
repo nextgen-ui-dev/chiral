@@ -4,6 +4,7 @@ import { LoadingHero } from "~/layouts/LoadingHero";
 import { api } from "~/utils/api";
 
 export const withAuth: (component: React.FC) => React.FC = (Component) => {
+  // eslint-disable-next-line
   return function WithAuth(props: any) {
     const { data, isLoading } = api.user.getSessionInfo.useQuery();
     const router = useRouter();

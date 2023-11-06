@@ -1,4 +1,4 @@
-import { type User, type Key, LuciaError, Session } from "lucia";
+import { type User, type Key, LuciaError, type Session } from "lucia";
 import { parseCookie } from "lucia/utils";
 import {
   validateOAuth2AuthorizationCode,
@@ -10,13 +10,8 @@ import { LinearClient } from "@linear/sdk";
 import { ValidAuthProviders, auth } from "~/server/auth";
 import { ulid } from "~/lib/ulid";
 import { db } from "~/server/db";
-import {
-  sessions,
-  users,
-  workspaceProviders,
-  workspaces,
-} from "~/server/db/schema";
-import { and, eq } from "drizzle-orm";
+import { sessions, users, workspaces } from "~/server/db/schema";
+import { eq } from "drizzle-orm";
 
 interface LinearAccessTokenRes {
   access_token: string;
@@ -73,7 +68,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     checkKey: try {
       linearKey = await auth.getKey(ValidAuthProviders.LINEAR, viewer.id);
       user = await auth.getUser(linearKey.userId);
-    } catch (e: any) {
+    } catch (e) {
       if (e instanceof LuciaError) {
         if (e.message === "AUTH_INVALID_KEY_ID") {
           createUserKey: try {
@@ -92,6 +87,8 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
             });
 
             linearKey = await auth.getKey(ValidAuthProviders.LINEAR, viewer.id);
+
+            // eslint-disable-next-line
           } catch (e: any) {
             if (typeof e.code === "string" && e.code === "23505") {
               const existingUser = (
@@ -148,7 +145,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         .returning();
 
       workspace = res[0]!;
-    } catch (e: any) {
+    } catch (e) {
       console.log("Failed to process linear callback:", e);
       return res.status(500).end();
     }
@@ -187,7 +184,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       .status(302)
       .setHeader("Location", "/" + workspaceId)
       .end();
-  } catch (e: any) {
+  } catch (e) {
     if (e instanceof OAuthRequestError) {
       // invalid authorization code
       return res.status(400).end();

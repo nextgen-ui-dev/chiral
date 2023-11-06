@@ -33,7 +33,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     authRequest.setSession(newSession);
 
     return res.status(200).end();
-  } catch (e: any) {
+  } catch (e) {
     if (e instanceof LuciaError && e.message === `AUTH_INVALID_SESSION_ID`) {
       // invalid session
       await auth.invalidateSession(sessionId);

@@ -1,5 +1,6 @@
 /// <reference types="lucia" />
 declare namespace Lucia {
+  // eslint-disable-next-line
   type Auth = import("~/server/auth").Auth;
   type DatabaseUserAttributes = {
     email: string;
