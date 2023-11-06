@@ -13,13 +13,12 @@ import { astra } from "~/server/astra";
 import { embeddingModel } from "~/lib/document";
 
 // AI services
-import { openai } from "~/server/openai";
+import { ChatOpenAILangChain } from "~/server/openai";
 import { OpenAIStream, streamToResponse } from "ai";
 import type { Message } from "ai/react";
 import type { ChatCompletionMessageParam } from "openai/resources";
 
 import { RetrievalQAChain } from "langchain/chains";
-import { ChatOpenAI } from "langchain/chat_models/openai";
 
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
@@ -62,6 +61,10 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const document = documentRes[0]!;
 
   // CONVERT LINEAR DOCUMENT INTO ISSUES
+
+  // Initialize AI services
+  const model = ChatOpenAILangChain;
+  const chain = RetrievalQAChain.fromLLM(model)
   
   // A. RETRIEVAL
   // Since a document may be embedded multiple times, retrieve the embedding with the latest timestamp 
@@ -135,14 +138,14 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 
   const backgroundPrompt = promptTemplate(backgroundContext);
 
-  const backgroundResponse = await openai.chat.completions.create({
-    model: "gpt-3.5-turbo",
-    temperature: 0.7,
-    stream: true, 
-    messages: [
-      backgroundPrompt
-    ]
-  });
+  // const backgroundResponse = await openai.chat.completions.create({
+  //   model: "gpt-3.5-turbo",
+  //   temperature: 0.7,
+  //   stream: true, 
+  //   messages: [
+  //     backgroundPrompt
+  //   ]
+  // });
 
   // QA_2
 
