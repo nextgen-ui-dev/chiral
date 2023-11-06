@@ -13,7 +13,7 @@ import superjson from "superjson";
 import { ZodError } from "zod";
 
 import { db } from "~/server/db";
-import { pinecone } from "~/server/pinecone";
+import { astra } from "~/server/astra";
 import { openai } from "~/server/openai";
 import { auth } from "../auth";
 import { LinearClient } from "@linear/sdk";
@@ -46,7 +46,7 @@ const createInnerTRPCContext = (opts: CreateContextOptions) => {
     session: opts.session,
     linearClient: opts.linearClient,
     db,
-    pinecone,
+    astra,
     openai,
   };
 };

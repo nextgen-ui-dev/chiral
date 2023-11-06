@@ -4,6 +4,7 @@ import {
   pgTable,
   primaryKey,
   text,
+  integer,
   timestamp,
   unique,
   varchar,
@@ -38,6 +39,33 @@ export const documents = pgTable(
     ),
   }),
 );
+
+export const generatedIssues = pgTable(
+  "generated_issues",
+  {
+    id: varchar("id", { length: 255 }).primaryKey(),
+    providerIssueId: text("provider_issue_id").notNull(),
+    workspaceId: text("workspace_id").notNull(),
+    teamId: varchar("team_id", { length: 255 }).notNull(),
+    userId: varchar("user_id", { length: 255 }).notNull(),
+  },
+  (issue) => ({
+    unq: unique().on(
+      issue.providerIssueId,
+      issue.workspaceId,
+      issue.teamId,
+      issue.userId,
+    ),
+  }),
+);
+
+export const generatedIssueDetail = pgTable("generated_issue_detail", {
+  id: varchar("id", { length: 255 }).primaryKey(),
+  issueId: varchar("issue_id", { length: 255 }),
+  title: varchar("title", { length: 255 }).notNull(),
+  description: text("description"),
+  priority: integer("priority"),
+});
 
 export const workspaces = pgTable(
   "workspaces",

@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { createTRPCRouter, linearProcedure } from "../../trpc";
-import { LinearError } from "@linear/sdk";
+import { LinearError, type Issue } from "@linear/sdk";
 import { TRPCError } from "@trpc/server";
 
 export const linearRouter = createTRPCRouter({
@@ -9,6 +9,21 @@ export const linearRouter = createTRPCRouter({
 
     return { meta: res.pageInfo, teams: res.nodes };
   }),
+
+  getTeamById: linearProcedure
+    .input(z.object({ teamId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      try {
+        const team = await ctx.linearClient.team(input.teamId);
+
+        return team;
+      } catch (err) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Something went wrong when querying the team",
+        });
+      }
+    }),
 
   getDocumentDetail: linearProcedure
     .input(z.object({ documentId: z.string() }))
@@ -118,7 +133,7 @@ export const linearRouter = createTRPCRouter({
     const meta = res.pageInfo;
 
     const issues = await Promise.all(
-      res.nodes.map(async (issue) => ({
+      res.nodes.map(async (issue: Issue) => ({
         ...issue,
         project: await issue.project,
         creator: await issue.creator,
@@ -127,5 +142,25 @@ export const linearRouter = createTRPCRouter({
 
     return { meta, issues };
   }),
+
+  getIssueById: linearProcedure
+    .input(z.object({ issueId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      try {
+        const res = await ctx.linearClient.issue(input.issueId);
+        const issue = {
+          ...res,
+          creator: await res.creator,
+          project: await res.project,
+        };
+
+        return issue;
+      } catch (err) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Something went wrong when querying the issue",
+        });
+      }
+    }),
 
 });

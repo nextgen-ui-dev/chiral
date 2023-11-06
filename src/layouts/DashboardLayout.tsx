@@ -26,7 +26,7 @@ export const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({
     <LoadingHero />
   ) : (
     <div className="flex min-h-screen w-full flex-row">
-      <nav className="min-h-screen min-w-[20rem] max-w-xs overflow-x-clip border-r-[1px] border-solid border-primary-dark p-4">
+      <nav className="min-h-screen min-w-[17rem] max-w-xs overflow-x-clip border-r-[1px] border-solid border-primary-dark p-4">
         <Popover>
           <PopoverTrigger asChild>
             <Button

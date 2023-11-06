@@ -10,7 +10,6 @@ export const env = createEnv({
     SERVER_URL: z.string(),
     DATABASE_URL: z
       .string()
-      .url()
       .refine(
         (str) => !str.includes("YOUR_MYSQL_URL_HERE"),
         "You forgot to change the default URL",
@@ -20,10 +19,13 @@ export const env = createEnv({
       .default("development"),
     LINEAR_CLIENT_ID: z.string(),
     LINEAR_CLIENT_SECRET: z.string(),
-    PINECONE_API_KEY: z.string(),
-    PINECONE_ENV: z.string(),
     OPENAI_ORGANIZATION_ID: z.string(),
     OPENAI_API_KEY: z.string(),
+    ASTRA_DB_ID: z.string(),
+    ASTRA_KEYSPACE: z.string(),
+    ASTRA_CLIENT_ID: z.string(),
+    ASTRA_CLIENT_SECRET: z.string(),
+    ASTRA_SCB_PATH: z.string(),
   },
 
   /**
@@ -45,10 +47,13 @@ export const env = createEnv({
     NODE_ENV: process.env.NODE_ENV,
     LINEAR_CLIENT_ID: process.env.LINEAR_CLIENT_ID,
     LINEAR_CLIENT_SECRET: process.env.LINEAR_CLIENT_SECRET,
-    PINECONE_API_KEY: process.env.PINECONE_API_KEY,
-    PINECONE_ENV: process.env.PINECONE_ENV,
     OPENAI_ORGANIZATION_ID: process.env.OPENAI_ORGANIZATION_ID,
     OPENAI_API_KEY: process.env.OPENAI_API_KEY,
+    ASTRA_DB_ID: process.env.ASTRA_DB_ID,
+    ASTRA_KEYSPACE: process.env.ASTRA_KEYSPACE,
+    ASTRA_CLIENT_ID: process.env.ASTRA_CLIENT_ID,
+    ASTRA_CLIENT_SECRET: process.env.ASTRA_CLIENT_SECRET,
+    ASTRA_SCB_PATH: process.env.ASTRA_SCB_PATH,
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially

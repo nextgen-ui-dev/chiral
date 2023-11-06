@@ -1,0 +1,56 @@
+name: Deployment Workflow
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+      
+env:
+  CONFIG_ENV: ${{ secrets.CONFIG_ENV }}
+  REGISTRY: ${{ secrets.REGISTRY }}
+  REGISTRY_USER: ${{ secrets.REGISTRY_USER }}
+  REGISTRY_IMAGE: ${{ secrets.REGISTRY_IMAGE }}
+  REGISTRY_ACCESS_TOKEN: ${{ secrets.REGISTRY_ACCESS_TOKEN }}
+      
+jobs:
+  Deploy-to-EC2:
+    name: Deploy to EC2
+    runs-on: ubuntu-22.04
+    
+    steps:
+      - name: Checkout Sources
+        uses: actions/checkout@v3
+      
+      - name: Sign in to Container Registry
+        run: echo $REGISTRY_ACCESS_TOKEN | docker login -u $REGISTRY_USER --password-stdin $REGISTRY
+      
+      - name: Build and Tag Image
+        run: |
+          echo $CONFIG_ENV | tr ' ' '\n' > .env
+          docker build -t "$REGISTRY/$REGISTRY_IMAGE:${{ github.sha }}" .
+          docker tag "$REGISTRY/$REGISTRY_IMAGE:${{ github.sha }}" "$REGISTRY/$REGISTRY_IMAGE:latest"
+        
+      - name: Publish to Container Registry
+        run: docker push "$REGISTRY/$REGISTRY_IMAGE:latest"
+        
+      - name: Pull Latest Image and Run Container
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATEKEY }}
+          envs: CONFIG_ENV,REGISTRY_ACCESS_TOKEN,REGISTRY_USER,REGISTRY,REGISTRY_IMAGE
+          script: |
+            mkdir -pv ./app/chiral/config
+            cd ./app/chiral
+            echo $CONFIG_ENV | tr ' ' '\n' > .env
+            echo $REGISTRY_ACCESS_TOKEN | docker login -u $REGISTRY_USER --password-stdin $REGISTRY
+            docker rm -f chiral
+            docker pull "$REGISTRY/$REGISTRY_IMAGE:latest"
+            docker run -d --name chiral --env-file .env \
+              --restart always \
+              -v "$(pwd)/.env:/app/chiral/.env:ro" \
+              -v "$(pwd)/config:/app/chiral/config" \
+              -p "3000:3000" \
+              "$REGISTRY/$REGISTRY_IMAGE:latest"
