@@ -130,14 +130,25 @@ export const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({
         </Popover>
         <div className="my-2 max-h-full w-full overflow-y-auto">
           <ul className="text-sm">
-            <li>
+          <li>
               <Button
+                asChild
                 variant="ghost"
                 size="sm"
                 className="flex h-auto w-full flex-row items-center justify-start gap-2 p-2 hover:bg-primary"
               >
-                <Briefcase size={16} />
-                <p className="font-semibold">Projects</p>
+                <Link
+                  href={
+                    "/" +
+                    workspace?.providerId +
+                    ":" +
+                    workspace?.providerWorkspaceId +
+                    "/projects"
+                  }
+                >
+                  <Briefcase size={16} />
+                  <p className="font-semibold">Projects</p>
+                </Link>
               </Button>
             </li>
             <li>
