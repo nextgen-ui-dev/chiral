@@ -1,6 +1,6 @@
 import { CassandraStore } from "langchain/vectorstores/cassandra";
-import { OpenAIEmbeddings } from "langchain/embeddings/openai";
 import { env } from "~/env.mjs";
+import { embeddingModel } from "~/lib/document";
 
 const cassandraConfig = {
   cloud: {
@@ -27,6 +27,6 @@ const cassandraConfig = {
 };
 
 export const cassandraStore = new CassandraStore(
-  new OpenAIEmbeddings(),
+  embeddingModel,
   cassandraConfig
 );
