@@ -48,7 +48,7 @@ jobs:
             echo $REGISTRY_ACCESS_TOKEN | docker login -u $REGISTRY_USER --password-stdin $REGISTRY
             docker rm -f chiral
             docker pull "$REGISTRY/$REGISTRY_IMAGE:latest"
-            docker run -d --name chiral \
+            docker run -d --name chiral --env-file .env \
               --restart always \
               -v "$(pwd)/.env:/app/chiral/.env:ro" \
               -v "$(pwd)/config:/app/chiral/config" \
