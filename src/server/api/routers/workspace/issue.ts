@@ -11,28 +11,32 @@ import { TRPCError } from "@trpc/server";
 
 // Vector DB
 import { astra } from "~/server/astra";
-import { cassandraStore } from "./generator/vectorstores";
+// import { cassandraStore } from "./generator/vectorstores";
 import { embeddingModel } from "~/lib/document";
 
 // AI services
 
 import { ChatOpenAILangChain } from "~/server/openai";
-import { OpenAIStream, streamToResponse } from "ai";
-import { LLMChain, RetrievalQAChain } from "langchain/chains";
+// import { OpenAIStream, streamToResponse } from "ai";
+import { 
+  LLMChain, 
+  // RetrievalQAChain 
+} from "langchain/chains";
 import {
-  PromptTemplate,
+  // PromptTemplate,
   ChatPromptTemplate,
   HumanMessagePromptTemplate,
   SystemMessagePromptTemplate,
 } from "langchain/prompts";
-import { ChatOpenAI } from "langchain/chat_models/openai";
-import { formatDocumentsAsString } from "langchain/util/document";
-import {
-  RunnablePassthrough,
-  RunnableSequence,
-} from "langchain/schema/runnable";
-import { StringOutputParser } from "langchain/schema/output_parser";
-import { JsonOutputFunctionsParser } from "langchain/output_parsers";
+// import { ChatOpenAI } from "langchain/chat_models/openai";
+// import { formatDocumentsAsString } from "langchain/util/document";
+// import {
+//   RunnablePassthrough,
+//   RunnableSequence,
+// } from "langchain/schema/runnable";
+// import { StringOutputParser } from "langchain/schema/output_parser";
+// import { JsonOutputFunctionsParser } from "langchain/output_parsers";
+import type { ChainValues } from "langchain/dist/schema";
 
 // Others
 import * as Questions from "~/server/api/routers/workspace/generator/generatorQuestions";
@@ -74,8 +78,13 @@ export const issueRouter = createTRPCRouter({
       // CONVERT LINEAR DOCUMENT INTO ISSUES
       // Initialize AI services
       const model = ChatOpenAILangChain;
-      const vectorStore = cassandraStore;
-      const vectorStoreRetriever = vectorStore.asRetriever();
+      // const vectorStore = cassandraStore;
+      // const vectorStoreRetriever = vectorStore.asRetriever();
+
+      const memory: { background: string, solutionOverview: string } = {
+        background: "",
+        solutionOverview: ""
+      };
     
       // A. RETRIEVAL
       // Since a document may be embedded multiple times, retrieve the embedding with the latest timestamp 
@@ -133,17 +142,40 @@ export const issueRouter = createTRPCRouter({
         llm: model
       });
 
-      const response = await chain.call({
+      // Init response var
+      let response: ChainValues;
+
+      // Store `background` answer in memory
+      response = await chain.call({
         context: backgroundContextDoc,
         question: Questions.backgroundQuestion
       });
 
-    
-      console.log("RESPONSE (trpc)\n", response);
-      if (response) {
-      }
+      memory.background = response.text as string;
 
-      return response;
+      // Store `solution overview` answer in memory
+      response = await chain.call({
+        context: `
+          ${backgroundContextDoc}\n
+          Problem background: ${memory.background}\n
+          Solution overview: ${memory.solutionOverview}`,
+        question: Questions.solutionQuestion
+      }); 
+
+      memory.solutionOverview = response.text as string;
+
+      // Get the final Issues recommendations
+      const finalResponse = await chain.call({
+        context: `
+          ${backgroundContextDoc}\n
+          Problem background: ${memory.background}\n
+          Solution overview: ${memory.solutionOverview}`,
+        question: Questions.condenseQuestionTemplate
+      }); 
+
+      console.log("\nRESPONSE (trpc)\n\n", finalResponse.text as string);
+
+      return finalResponse;
     }),
   
   exportGeneratedIssue: protectedProcedure

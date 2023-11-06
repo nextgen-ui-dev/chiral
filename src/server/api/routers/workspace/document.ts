@@ -6,6 +6,7 @@ import { and, asc, eq, exists } from "drizzle-orm";
 import { markdownSplitter, embeddingModel } from "~/lib/document";
 import type { TypedArray } from "@xenova/transformers";
 import { ulid } from "~/lib/ulid";
+import type { Client } from "cassandra-driver";
 
 export const documentRouter = createTRPCRouter({
   saveMarkdownEmbeddings: protectedProcedure
@@ -80,7 +81,9 @@ export const documentRouter = createTRPCRouter({
       }
 
       try {
-        await ctx.astra.batch(queries, { prepare: true });
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+        const astraClient: Client = ctx.astra as Client;
+        await astraClient.batch(queries, { prepare: true });
       } catch (error) {
         console.log(error);
       }

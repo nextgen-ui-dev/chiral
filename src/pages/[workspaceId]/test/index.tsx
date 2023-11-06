@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import { api } from '~/utils/api'
 
 const Testing = () => {
@@ -20,7 +20,8 @@ const Testing = () => {
         <div>Loading..........</div>
       )
       : (
-        <div>{JSON.stringify(data)}</div>
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+        <div>{data?.text.split("\n").map((d: string, k: number)=> <div key={k}>{d}</div>)}</div>
       )
       }
     </div>

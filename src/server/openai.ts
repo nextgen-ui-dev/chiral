@@ -12,14 +12,10 @@ export const OpenAILangChain = new LangChainOpenAI({
   modelName: "gpt-3.5-turbo",
   openAIApiKey: env.OPENAI_API_KEY,
   temperature: 0.7,
-  maxTokens: 1000,
-  streaming: true
 });
 
 export const ChatOpenAILangChain = new ChatOpenAI({
-  modelName: "gpt-3.5-turbo",
+  modelName: "gpt-3.5-turbo-16k",
   openAIApiKey: env.OPENAI_API_KEY,
   temperature: 0.7,
-  maxTokens: 1000,
-  streaming: true
 });
