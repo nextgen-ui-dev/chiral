@@ -11,6 +11,9 @@ import {
 } from "~/components/ui/popover";
 import { api } from "~/utils/api";
 import { LoadingHero } from "./LoadingHero";
+import { usePathname } from "next/navigation";
+import { cn } from "~/lib/utils";
+
 
 export const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({
   children,
@@ -21,6 +24,8 @@ export const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({
 
   const { data, isLoading: workspacesLoading } =
     api.workspace.getWorkspaceSessions.useQuery();
+
+  const pathname = usePathname();
 
   return isLoading || workspaceLoading ? (
     <LoadingHero />
@@ -129,13 +134,13 @@ export const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({
           </PopoverContent>
         </Popover>
         <div className="my-2 max-h-full w-full overflow-y-auto">
-          <ul className="text-sm">
-          <li>
+          <ul className="text-sm space-y-2 pt-4">
+            <li>
               <Button
                 asChild
                 variant="ghost"
                 size="sm"
-                className="flex h-auto w-full flex-row items-center justify-start gap-2 p-2 hover:bg-primary"
+                className={cn("flex h-auto w-full flex-row items-center justify-start gap-2 p-2 hover:bg-primary", pathname.includes('/projects') && "bg-primary")}
               >
                 <Link
                   href={
@@ -155,7 +160,7 @@ export const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({
               <Button
                 variant="ghost"
                 size="sm"
-                className="flex h-auto w-full flex-row items-center justify-start gap-2 p-2 hover:bg-primary"
+                className={cn("flex h-auto w-full flex-row items-center justify-start gap-2 p-2 hover:bg-primary", pathname.includes('/issues') && "bg-primary")}
               >
                 <Ticket size={16} />
                 <p className="font-semibold">Issues</p>
@@ -166,7 +171,7 @@ export const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({
                 asChild
                 variant="ghost"
                 size="sm"
-                className="flex h-auto w-full flex-row items-center justify-start gap-2 p-2 hover:bg-primary"
+                className={cn("flex h-auto w-full flex-row items-center justify-start gap-2 p-2 hover:bg-primary", pathname.includes('/documents') && "bg-primary")}
               >
                 <Link
                   href={
@@ -187,7 +192,7 @@ export const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({
                 asChild
                 variant={"ghost"}
                 size={"sm"}
-                className="flex h-auto w-full flex-row items-center justify-start gap-2 p-2 hover:bg-primary"
+                className={cn("flex h-auto w-full flex-row items-center justify-start gap-2 p-2 hover:bg-primary", pathname.includes('/generate') && "bg-primary")}
               >
                 <Link
                   href={
