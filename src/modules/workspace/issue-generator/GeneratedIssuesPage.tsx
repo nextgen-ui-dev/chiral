@@ -10,8 +10,7 @@ import { LoadingHero } from '~/layouts/LoadingHero';
 import IssuesList from './IssuesList';
 import { Issue } from '@linear/sdk';
 
-
-const IssueGeneratorPage = withAuth(() => {
+const GeneratedIssuesPage = withAuth(() => {
   const router = useRouter();
 
   const { data: sessionData, isLoading: sessionLoading } = 
@@ -72,4 +71,4 @@ const IssueGeneratorPage = withAuth(() => {
   )
 });
 
-export default IssueGeneratorPage;
+export default GeneratedIssuesPage;
