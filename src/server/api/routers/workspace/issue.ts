@@ -15,15 +15,28 @@ import { cassandraStore } from "./generator/vectorstores";
 import { embeddingModel } from "~/lib/document";
 
 // AI services
+
 import { ChatOpenAILangChain } from "~/server/openai";
 import { OpenAIStream, streamToResponse } from "ai";
-import { RetrievalQAChain } from "langchain/chains";
-
+import { LLMChain, RetrievalQAChain } from "langchain/chains";
+import {
+  PromptTemplate,
+  ChatPromptTemplate,
+  HumanMessagePromptTemplate,
+  SystemMessagePromptTemplate,
+} from "langchain/prompts";
+import { ChatOpenAI } from "langchain/chat_models/openai";
+import { formatDocumentsAsString } from "langchain/util/document";
+import {
+  RunnablePassthrough,
+  RunnableSequence,
+} from "langchain/schema/runnable";
+import { StringOutputParser } from "langchain/schema/output_parser";
 import { JsonOutputFunctionsParser } from "langchain/output_parsers";
 
 // Others
 import * as Questions from "~/server/api/routers/workspace/generator/generatorQuestions";
-import { PromptTemplate } from "langchain/prompts";
+
 
 export const issueRouter = createTRPCRouter({
   generateIssueRecommendations: protectedProcedure
@@ -59,6 +72,10 @@ export const issueRouter = createTRPCRouter({
       const document = documentRes[0]!;
 
       // CONVERT LINEAR DOCUMENT INTO ISSUES
+      // Initialize AI services
+      const model = ChatOpenAILangChain;
+      const vectorStore = cassandraStore;
+      const vectorStoreRetriever = vectorStore.asRetriever();
     
       // A. RETRIEVAL
       // Since a document may be embedded multiple times, retrieve the embedding with the latest timestamp 
@@ -98,20 +115,29 @@ export const issueRouter = createTRPCRouter({
           { prepare: true },
       );
     
-      const backgroundContext = backgroundDocEmbedResult.rows
+      const backgroundContextDoc = backgroundDocEmbedResult.rows
         .map((doc) => doc.get("text") as string)
         .join("\n")
         .substring(0, 3000);
 
-      // Initialize AI services
-      const model = ChatOpenAILangChain;
-      const chain = RetrievalQAChain.fromLLM(model, cassandraStore.asRetriever(), {
-        prompt: PromptTemplate.fromTemplate(Questions.promptTemplate)
+      // Create messageList
+      const messages = [
+        SystemMessagePromptTemplate.fromTemplate(Questions.condenseQuestionTemplate),
+        HumanMessagePromptTemplate.fromTemplate(Questions.answerTemplate),
+      ]
+
+      const chatPrompt = ChatPromptTemplate.fromMessages(messages);
+
+      const chain = new LLMChain({
+        prompt: chatPrompt,
+        llm: model
       });
-    
+
       const response = await chain.call({
-        query: Questions.backgroundQuestion,
+        context: backgroundContextDoc,
+        question: Questions.backgroundQuestion
       });
+
     
       console.log("RESPONSE (trpc)\n", response);
       if (response) {
