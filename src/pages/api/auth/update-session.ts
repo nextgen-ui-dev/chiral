@@ -8,11 +8,15 @@ import { sessions } from "~/server/db/schema";
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method !== "POST") return res.status(405).end();
 
-  if (typeof req.body.sessionId !== "string" || req.body.sessionId === "")
+  if (typeof req.body.sessionId !== "string" || req.body.sessionId === "") {
+    console.error("Session ID is not string or is empty");
     return res.status(401).end();
+  }
 
-  if (typeof req.body.workspaceId !== "string" || req.body.workspaceId === "")
+  if (typeof req.body.workspaceId !== "string" || req.body.workspaceId === "") {
+    console.error("Workspace ID is not string or is empty");
     return res.status(401).end();
+  }
 
   const sessionId = req.body.sessionId as string;
   const workspaceId = req.body.workspaceId as string;
@@ -26,7 +30,11 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       .from(sessions)
       .where(eq(sessions.workspaceId, workspaceId))
       .limit(1);
-    if (result.length < 1) return res.status(401).end();
+
+    if (result.length < 1) {
+      console.error(`Session not found. Workspace ID: ${workspaceId}`);
+      return res.status(401).end();
+    }
 
     const newSession = await auth.validateSession(result[0]!.id);
 

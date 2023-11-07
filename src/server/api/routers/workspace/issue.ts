@@ -1,3 +1,4 @@
+/* eslint-disable prefer-const */
 import { z } from "zod";
 // Relational DB
 import { ulid } from "ulid";
@@ -11,13 +12,11 @@ import { TRPCError } from "@trpc/server";
 
 // Vector DB
 import { astra } from "~/server/astra";
-// import { cassandraStore } from "./generator/vectorstores";
 import { embeddingModel } from "~/lib/document";
 
 // AI services
 
 import { ChatOpenAILangChain } from "~/server/openai";
-// import { OpenAIStream, streamToResponse } from "ai";
 import { 
   LLMChain, 
   // RetrievalQAChain 
@@ -28,14 +27,6 @@ import {
   HumanMessagePromptTemplate,
   SystemMessagePromptTemplate,
 } from "langchain/prompts";
-// import { ChatOpenAI } from "langchain/chat_models/openai";
-// import { formatDocumentsAsString } from "langchain/util/document";
-// import {
-//   RunnablePassthrough,
-//   RunnableSequence,
-// } from "langchain/schema/runnable";
-// import { StringOutputParser } from "langchain/schema/output_parser";
-// import { JsonOutputFunctionsParser } from "langchain/output_parsers";
 import type { ChainValues } from "langchain/dist/schema";
 
 // Others
@@ -165,7 +156,7 @@ export const issueRouter = createTRPCRouter({
       memory.solutionOverview = response.text as string;
 
       // Get the final Issues recommendations
-      const finalResponse = await chain.call({
+      const finalResponse: ChainValues = await chain.call({
         context: `
           ${backgroundContextDoc}\n
           Problem background: ${memory.background}\n
@@ -173,9 +164,11 @@ export const issueRouter = createTRPCRouter({
         question: Questions.condenseQuestionTemplate
       }); 
 
-      console.log("\nRESPONSE (trpc)\n\n", finalResponse.text as string);
+      let result;
+      result = finalResponse.text as string;
+      result = JSON.parse(result) as JSON;
 
-      return finalResponse;
+      return result;
     }),
   
   exportGeneratedIssue: protectedProcedure
