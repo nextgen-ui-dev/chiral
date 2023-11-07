@@ -1,6 +1,5 @@
 # Installation
 FROM node:18.18.2-bookworm-slim AS deps
-RUN apk add --no-cache libc6-compat
 
 WORKDIR /app
 
