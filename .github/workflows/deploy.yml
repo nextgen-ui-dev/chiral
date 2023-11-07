@@ -28,7 +28,7 @@ jobs:
       - name: Build and Tag Image
         run: |
           echo $CONFIG_ENV | tr ' ' '\n' > .env
-          docker build --platform=linux/x86_64 -t "$REGISTRY/$REGISTRY_IMAGE:${{ github.sha }}" .
+          docker build -t "$REGISTRY/$REGISTRY_IMAGE:${{ github.sha }}" .
           docker tag "$REGISTRY/$REGISTRY_IMAGE:${{ github.sha }}" "$REGISTRY/$REGISTRY_IMAGE:latest"
 
       - name: Publish to Container Registry
