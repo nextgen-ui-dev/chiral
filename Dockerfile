@@ -1,6 +1,5 @@
 # Installation
-FROM node:18.18.2-alpine AS deps
-RUN apk add --no-cache libc6-compat gcompat
+FROM node:18.18.2-bullseye-slim AS deps
 
 WORKDIR /app
 
@@ -9,7 +8,7 @@ RUN npm ci
 
 
 # Build
-FROM node:18.18.2-alpine AS builder
+FROM node:18.18.2-bullseye-slim AS builder
 
 WORKDIR /app
 
@@ -18,8 +17,7 @@ COPY --from=deps /app/node_modules ./node_modules
 RUN npm run build && npm install --production --ignore-scripts --prefer-offline
 
 # Runner
-FROM node:18.18.2-alpine AS runner
-RUN apk add --no-cache libc6-compat gcompat
+FROM node:18.18.2-bullseye-slim AS runner
 
 WORKDIR /app
 
