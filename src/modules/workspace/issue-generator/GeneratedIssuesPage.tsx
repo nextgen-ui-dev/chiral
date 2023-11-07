@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/consistent-indexed-object-style */
+/* eslint-disable prefer-const */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import React, { useEffect } from "react";
 import axios from "axios";
 import { useRouter } from "next/router";
@@ -7,68 +10,87 @@ import { api } from "~/utils/api";
 import { withAuth } from "~/components/withAuth";
 import { DashboardLayout } from "~/layouts/DashboardLayout";
 import { LoadingHero } from "~/layouts/LoadingHero";
-import IssuesList from "./IssuesList";
+import { IssuesList, type IssueData } from "./IssuesList";
 
-const GeneratedIssuesPage = withAuth(() => {
-  const router = useRouter();
+import { Icon } from "@iconify/react";
+import { TeamSelectionCombobox } from "./TeamSelectionCombobox";
 
-  const { data: sessionData, isLoading: sessionLoading } =
-    api.user.getSessionInfo.useQuery();
+interface GeneratedIssuesPageProps {
+  docId: string;
+  handleSelectTeam: (id: string) => void;
+  exportLinearDriver: (issues: IssueData[]) => void;
+}
+
+const jsonToObjArray = (j: JSON): IssueData[] => {
+  const res_array: IssueData[] = [];
+
+  for (const key in j) {
+    // Grab suggestion JSON
+    const suggestion: IssueData = j[key as keyof unknown];
+
+    // Append with ID
+    res_array.push({
+      ...suggestion,
+      id: parseInt(key)
+    });
+  }
+
+  return res_array;
+}
+
+const GeneratedIssuesPage: React.FC<GeneratedIssuesPageProps> = ({
+  docId: documentId,
+  handleSelectTeam,
+  exportLinearDriver
+}) => {
+  // const { data: sessionData, isLoading: sessionLoading } =
+    // api.user.getSessionInfo.useQuery();
 
   const { data: GeneratedIssuesData, isLoading: generatedIssuesLoading } =
-    api.workspace.linear.getGeneratedIssues.useQuery(undefined, {
+    api.workspace.issue.generateIssueRecommendations.useQuery({
+      providerDocumentId: documentId
+    }, {
       refetchOnWindowFocus: false,
     });
-
-  useEffect(() => {
-    if (
-      !sessionLoading &&
-      sessionData?.session?.workspace_id !==
-        router.asPath.replace("/", "").replace("/generate", "")
-    ) {
-      // If the session has changed...
-      void (async function (workspaceId: string, sessionId: string) {
-        await axios.post("/api/auth/update-session", {
-          sessionId,
-          workspaceId,
-        });
-
-        await router.push("/" + workspaceId + "/generate");
-        router.reload();
-      })(
-        router.asPath.replace("/", "").replace("/generate", ""),
-        sessionData!.session!.id,
-      );
-    }
-  }, [sessionData, router, sessionLoading]);
+  
+  let generatedIssues: IssueData[] = [];
+  if (GeneratedIssuesData) {
+    generatedIssues = jsonToObjArray(GeneratedIssuesData);
+    console.log("generatedIssues", generatedIssues);
+  }
 
   return (
-    <>
-      <Head>
-        <title>Chiral</title>
-        <meta name="description" content="Automate your product backlogs" />
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
-      <DashboardLayout>
-        {generatedIssuesLoading ? (
-          <LoadingHero />
-        ) : (
-          <main className="flex min-h-screen w-full flex-col p-8">
-            <h1 className="text-4xl font-bold">Generated Issues</h1>
-            <div className="py-4"></div>
-
-            {GeneratedIssuesData ? (
-              <IssuesList issues={GeneratedIssuesData?.issues ?? []} />
-            ) : (
-              <div>
-                There seems to be a problem while displaying your issues
+    <div>
+      {generatedIssuesLoading ? (
+        <LoadingHero />
+      ) : (
+        <div>
+          {GeneratedIssuesData ? (
+            <div>
+              <div className="flex items-center gap-x-4">
+                {/* Select team + Export to linear */}
+                <TeamSelectionCombobox 
+                  handleSelectTeam={handleSelectTeam}
+                />
+                <div
+                  className="flex items-center gap-x-2  text-white min-w-[50px] bg-white bg-opacity-30 border border-primary-500 p-2 text-lg rounded-lg hover:cursor-pointer"
+                  onClick={() => exportLinearDriver(generatedIssues)}
+                >
+                  <Icon icon="mingcute:linear-fill" fontSize={20} />
+                  Export to Linear
+                </div>
               </div>
-            )}
-          </main>
-        )}
-      </DashboardLayout>
-    </>
+              <IssuesList issues={generatedIssues ?? []} />
+            </div>
+          ) : (
+            <div className="flex flex-row items-center text-xl">
+              There seems to be a problem while displaying your issues
+            </div>
+          )}
+        </div>
+      )}
+    </div>
   );
-});
+};
 
 export default GeneratedIssuesPage;

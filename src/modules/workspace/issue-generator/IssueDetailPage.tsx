@@ -5,10 +5,10 @@ import { api } from "~/utils/api";
 import Head from "next/head";
 import { DashboardLayout } from "~/layouts/DashboardLayout";
 import PriorityBar from "./PriorityBar";
-import { ChevronLeft } from "lucide-react";
 import { Skeleton } from "~/components/ui/skeleton";
+import { withAuth } from "~/components/withAuth";
 
-const IssueDetailPage = () => {
+const IssueDetailPage = withAuth(() => {
   const router = useRouter();
   const issueId = router.asPath
     .replace("/", "")
@@ -56,15 +56,6 @@ const IssueDetailPage = () => {
       </Head>
       <DashboardLayout>
         <div className={`relative flex flex-col h-screen w-full divide`}>
-          {/* Breadcrumbs */}
-          <div 
-            onClick={() => router.back()}
-            className="absolute max-w-[50px]: p-2 flex flex-row items-center gap-x-2 rounded-lg top-6 left-6 hover:cursor-pointer"
-          >
-            <ChevronLeft size={16} />
-            Issues List
-          </div>
-
           <div className="pt-[100px]"></div>
           {/* Main Editor Space */}
           <div className={`flex flex-col w-full max-w-3/4 pt-18 pb-12 px-6`}>
@@ -131,6 +122,6 @@ const IssueDetailPage = () => {
       </DashboardLayout>
     </>
   );
-};
+});
 
 export default IssueDetailPage;

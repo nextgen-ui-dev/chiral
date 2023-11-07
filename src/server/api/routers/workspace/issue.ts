@@ -1,3 +1,4 @@
+/* eslint-disable prefer-const */
 import { z } from "zod";
 // Relational DB
 import { ulid } from "ulid";
@@ -6,18 +7,21 @@ import { documents } from "~/server/db/schema";
 import { and, eq } from "drizzle-orm";
 
 import { createTRPCRouter, protectedProcedure } from "../../trpc";
-import { generatedIssues, generatedIssueDetail } from "~/server/db/schema";
+import { 
+  sessions, users, workspaces,
+
+  generatedIssues, generatedIssueDetail 
+} from "~/server/db/schema";
+
 import { TRPCError } from "@trpc/server";
 
 // Vector DB
 import { astra } from "~/server/astra";
-// import { cassandraStore } from "./generator/vectorstores";
 import { embeddingModel } from "~/lib/document";
 
 // AI services
 
 import { ChatOpenAILangChain } from "~/server/openai";
-// import { OpenAIStream, streamToResponse } from "ai";
 import { 
   LLMChain, 
   // RetrievalQAChain 
@@ -28,18 +32,12 @@ import {
   HumanMessagePromptTemplate,
   SystemMessagePromptTemplate,
 } from "langchain/prompts";
-// import { ChatOpenAI } from "langchain/chat_models/openai";
-// import { formatDocumentsAsString } from "langchain/util/document";
-// import {
-//   RunnablePassthrough,
-//   RunnableSequence,
-// } from "langchain/schema/runnable";
-// import { StringOutputParser } from "langchain/schema/output_parser";
-// import { JsonOutputFunctionsParser } from "langchain/output_parsers";
 import type { ChainValues } from "langchain/dist/schema";
 
 // Others
 import * as Questions from "~/server/api/routers/workspace/generator/generatorQuestions";
+import { api } from "~/utils/api";
+import { getIssuePriorityLevel } from "~/modules/workspace/issue-generator/IssuesList";
 
 
 export const issueRouter = createTRPCRouter({
@@ -106,8 +104,6 @@ export const issueRouter = createTRPCRouter({
     
       // 1. Document Context Retrieval
       // Create message to initiate embedding retrieval
-      
-    
       // QA_1: Background
       const backgroundEmbedding = new Float32Array(
         await embeddingModel.embedQuery(Questions.backgroundQuestion),
@@ -165,7 +161,7 @@ export const issueRouter = createTRPCRouter({
       memory.solutionOverview = response.text as string;
 
       // Get the final Issues recommendations
-      const finalResponse = await chain.call({
+      const finalResponse: ChainValues = await chain.call({
         context: `
           ${backgroundContextDoc}\n
           Problem background: ${memory.background}\n
@@ -173,57 +169,77 @@ export const issueRouter = createTRPCRouter({
         question: Questions.condenseQuestionTemplate
       }); 
 
-      console.log("\nRESPONSE (trpc)\n\n", finalResponse.text as string);
+      // Store to db
+      // TODO
 
-      return finalResponse;
+      let result;
+      result = finalResponse.text as string;
+      result = JSON.parse(result) as JSON;
+
+      return result;
     }),
   
   exportGeneratedIssue: protectedProcedure
     .input(
       z.object({
-        providerIssueId: z.string(),
-        issueId: z.string(),
+        // providerIssueId: z.string(),
+        
+        teamId: z.string(),
+        // TODO for now add issue to speed up dev
+        issue: z.object({
+          title: z.string(),
+          description: z.string(),
+          priority: z.string()
+        }),
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      await ctx.db.transaction(async (tx) => {
-        const issueMetadataRes = await tx
-          .select()
-          .from(generatedIssues)
-          .where(eq(generatedIssues.id, input.issueId))
-          .limit(1);
-
-        if (issueMetadataRes.length < 1) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "Issue Metadata not found",
-          });
-        }
-
-        const issueMetadata = issueMetadataRes[0];
-
-        const issueDetailRes = await tx
-          .select()
-          .from(generatedIssueDetail)
-          .where(eq(generatedIssueDetail.issueId, input.issueId))
-          .limit(1);
-
-        if (issueDetailRes.length < 1) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "Issue not found",
-          });
-        }
-
-        const issueDetail = issueDetailRes[0];
-
-        await ctx.linearClient?.createIssue({
-          teamId: issueMetadata?.teamId ?? "",
-          title: issueDetail?.title,
-          description: issueDetail?.description,
-          priority: issueDetail?.priority,
-        });
+      await ctx.linearClient?.createIssue({
+        teamId: input.teamId,
+        title: input.issue.title,
+        description: input.issue.description,
+        priority: getIssuePriorityLevel(input.issue.priority),
       });
+
+      // NOTE - DONT DELETE - for now gausah query dari db dulu. Lgsg terima suggestions dari LLM
+      // await ctx.db.transaction(async (tx) => {
+      //   const issueMetadataRes = await tx
+      //     .select()
+      //     .from(generatedIssues)
+      //     .where(eq(generatedIssues.id, input.issueId))
+      //     .limit(1);
+
+      //   if (issueMetadataRes.length < 1) {
+      //     throw new TRPCError({
+      //       code: "NOT_FOUND",
+      //       message: "Issue Metadata not found",
+      //     });
+      //   }
+
+      //   const issueMetadata = issueMetadataRes[0];
+
+      //   const issueDetailRes = await tx
+      //     .select()
+      //     .from(generatedIssueDetail)
+      //     .where(eq(generatedIssueDetail.issueId, input.issueId))
+      //     .limit(1);
+
+      //   if (issueDetailRes.length < 1) {
+      //     throw new TRPCError({
+      //       code: "NOT_FOUND",
+      //       message: "Issue not found",
+      //     });
+      //   }
+
+      //   const issueDetail = issueDetailRes[0];
+
+        // await ctx.linearClient?.createIssue({
+        //   teamId: issueMetadata?.teamId ?? "",
+        //   title: issueDetail?.title,
+        //   description: issueDetail?.description,
+        //   priority: issueDetail?.priority,
+        // });
+      // });
     }),
 });
 

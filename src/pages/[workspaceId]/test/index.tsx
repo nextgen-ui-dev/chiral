@@ -1,5 +1,6 @@
 import React from 'react'
 import { api } from '~/utils/api'
+import { LoadingHero } from '~/layouts/LoadingHero'
 
 const Testing = () => {
   const providerDocumentId = "5c4c13b4-1474-4744-ab57-2557cf48668f"
@@ -13,17 +14,16 @@ const Testing = () => {
 
   return (
     <div>
-      <h1>
-        Result
-      </h1>
       {isLoading ? (
-        <div>Loading..........</div>
+        <LoadingHero />
       )
       : (
         // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-        <div>{data?.text.split("\n").map((d: string, k: number)=> <div key={k}>{d}</div>)}</div>
-      )
-      }
+        <div>
+          <h1>Result</h1>
+          {data && JSON.stringify(data)}
+        </div>
+        )}
     </div>
   )
 }

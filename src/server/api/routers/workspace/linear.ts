@@ -7,7 +7,8 @@ export const linearRouter = createTRPCRouter({
   getTeams: linearProcedure.query(async ({ ctx }) => {
     const res = await ctx.linearClient.teams();
 
-    return { meta: res.pageInfo, teams: res.nodes };
+    // return { meta: res.pageInfo, teams: res.nodes };
+    return res.nodes;
   }),
 
   getTeamById: linearProcedure
