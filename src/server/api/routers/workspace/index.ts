@@ -4,10 +4,12 @@ import { and, eq, sql } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import { linearRouter } from "./linear";
 import { documentRouter } from "./document";
+import { issueRouter } from "./issue";
 
 export const workspaceRouter = createTRPCRouter({
   document: documentRouter,
   linear: linearRouter,
+  issue: issueRouter,
   getWorkspaceSessions: protectedProcedure.query(async ({ ctx }) => {
     return await ctx.db
       .select()
