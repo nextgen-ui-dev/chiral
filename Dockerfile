@@ -1,5 +1,5 @@
 # Installation
-FROM --platform=linux/amd64 node:18.18.2-alpine AS deps
+FROM --platform=linux/x86_64 node:18.18.2-alpine AS deps
 RUN apk add --no-cache libc6-compat
 
 WORKDIR /app
@@ -9,7 +9,7 @@ RUN npm ci
 
 
 # Build
-FROM --platform=linux/amd64 node:18.18.2-alpine AS builder
+FROM --platform=linux/x86_64 node:18.18.2-alpine AS builder
 
 WORKDIR /app
 
@@ -18,7 +18,7 @@ COPY --from=deps /app/node_modules ./node_modules
 RUN npm run build && npm install --production --ignore-scripts --prefer-offline
 
 # Runner
-FROM --platform=linux/amd64 node:18.18.2-alpine AS runner
+FROM --platform=linux/x86_64 node:18.18.2-alpine AS runner
 
 WORKDIR /app
 
