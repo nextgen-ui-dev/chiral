@@ -42,9 +42,17 @@ const priorities = [
   }
 ]
 
-export function IssuePriorityCombobox() {
+interface IssuePriorityType {
+  defaultVal?: string;
+  onChange: (newVal: string) => void;
+}
+
+export function IssuePriorityCombobox({
+  defaultVal,
+  onChange: handlePriority
+}: IssuePriorityType) {
   const [open, setOpen] = React.useState(false)
-  const [value, setValue] = React.useState("")
+  const [value, setValue] = React.useState(defaultVal)
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -72,6 +80,7 @@ export function IssuePriorityCombobox() {
                 value={priority.value}
                 onSelect={(currentValue) => {
                   setValue(currentValue === value ? "" : currentValue)
+                  handlePriority(currentValue)
                   setOpen(false)
                 }}
               >
