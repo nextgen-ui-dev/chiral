@@ -68,6 +68,48 @@ export const linearRouter = createTRPCRouter({
     return { meta, documents };
   }),
 
+  getProjects: linearProcedure.query(async ({ ctx }) => {
+    const res = await ctx.linearClient.projects();
+    const meta = res.pageInfo;
+    const projects = await Promise.all(
+      res.nodes.map(async (res) => ({
+        ...res,
+        creator: await res.creator,
+        documents: await res.documents()
+      })),
+    );
+    return { meta, projects };
+  }),
+
+  getProjectDetail: linearProcedure
+    .input(z.object({ projectId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      try {
+        const res = await ctx.linearClient.project(input.projectId);
+        const project = {
+          ...res,
+          creator: await res.creator,
+          docs: await res.creator,
+        };
+
+        return project;
+      } catch (e) {
+        if (
+          e instanceof LinearError &&
+          e.message === "Entity not found - Could not find referenced Document."
+        )
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Can't find document",
+          });
+
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Something went wrong",
+        });
+      }
+    }),
+
   getIssues: linearProcedure.query(async ({ ctx }) => {
     const res = await ctx.linearClient.issues();
 
@@ -120,4 +162,5 @@ export const linearRouter = createTRPCRouter({
         });
       }
     }),
+
 });
