@@ -1,6 +1,6 @@
 # Installation
-FROM node:18.18.2-bookworm-slim AS deps
-RUN apt-get update && apt-get install -y libc6-compat && rm -rf /var/lib/apt/lists/*
+FROM node:18.18.2-alpine AS deps
+RUN apk add --no-cache libc6-compat nasm autoconf automake bash libltdl libtool gcc make g++ zlib-dev
 
 WORKDIR /app
 
@@ -9,7 +9,7 @@ RUN npm ci
 
 
 # Build
-FROM node:18.18.2-bookworm-slim AS builder
+FROM node:18.18.2-alpine AS builder
 
 WORKDIR /app
 
@@ -18,7 +18,7 @@ COPY --from=deps /app/node_modules ./node_modules
 RUN npm run build && npm install --production --ignore-scripts --prefer-offline
 
 # Runner
-FROM node:18.18.2-bookworm-slim AS runner
+FROM node:18.18.2-alpine AS runner
 
 WORKDIR /app
 
