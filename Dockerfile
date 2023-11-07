@@ -1,6 +1,6 @@
 # Installation
 FROM node:18.18.2-bookworm-slim AS deps
-RUN apt-get install -y --no-cache libc6-compat
+RUN apt-get update && apt-get install -y libc6-compat && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
