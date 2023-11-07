@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/consistent-indexed-object-style */
+/* eslint-disable prefer-const */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import React, { useEffect } from "react";
 import axios from "axios";
 import { useRouter } from "next/router";
@@ -7,68 +10,71 @@ import { api } from "~/utils/api";
 import { withAuth } from "~/components/withAuth";
 import { DashboardLayout } from "~/layouts/DashboardLayout";
 import { LoadingHero } from "~/layouts/LoadingHero";
-import IssuesList from "./IssuesList";
+import { IssuesList, type IssueData } from "./IssuesList";
 
-const GeneratedIssuesPage = withAuth(() => {
+interface GeneratedIssuesPageProps {
+  handleGenerate: (newValue: boolean) => void;
+}
+
+const jsonToObjArray = (j: JSON): IssueData[] => {
+  const res_array: IssueData[] = [];
+
+  for (const key in j) {
+    // Grab suggestion JSON
+    const suggestion: IssueData = j[key as keyof unknown];
+
+    // Append with ID
+    res_array.push({
+      ...suggestion,
+      id: parseInt(key)
+    });
+  }
+
+  return res_array;
+}
+
+const GeneratedIssuesPage: React.FC<GeneratedIssuesPageProps> = ({
+  handleGenerate
+}) => {
   const router = useRouter();
 
-  const { data: sessionData, isLoading: sessionLoading } =
+  // const { data: sessionData, isLoading: sessionLoading } =
     api.user.getSessionInfo.useQuery();
 
+  const documentId = "5c4c13b4-1474-4744-ab57-2557cf48668f";
+
   const { data: GeneratedIssuesData, isLoading: generatedIssuesLoading } =
-    api.workspace.linear.getGeneratedIssues.useQuery(undefined, {
+    api.workspace.issue.generateIssueRecommendations.useQuery({
+      providerDocumentId: documentId
+    }, {
       refetchOnWindowFocus: false,
     });
+  
+  let generatedIssues: IssueData[] = [];
+  if (GeneratedIssuesData) {
+    generatedIssues = jsonToObjArray(GeneratedIssuesData);
 
-  useEffect(() => {
-    if (
-      !sessionLoading &&
-      sessionData?.session?.workspace_id !==
-        router.asPath.replace("/", "").replace("/generate", "")
-    ) {
-      // If the session has changed...
-      void (async function (workspaceId: string, sessionId: string) {
-        await axios.post("/api/auth/update-session", {
-          sessionId,
-          workspaceId,
-        });
 
-        await router.push("/" + workspaceId + "/generate");
-        router.reload();
-      })(
-        router.asPath.replace("/", "").replace("/generate", ""),
-        sessionData!.session!.id,
-      );
-    }
-  }, [sessionData, router, sessionLoading]);
+    console.log("generatedIssues", generatedIssues);
+  }
 
   return (
-    <>
-      <Head>
-        <title>Chiral</title>
-        <meta name="description" content="Automate your product backlogs" />
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
-      <DashboardLayout>
-        {generatedIssuesLoading ? (
-          <LoadingHero />
-        ) : (
-          <main className="flex min-h-screen w-full flex-col p-8">
-            <h1 className="text-4xl font-bold">Generated Issues</h1>
-            <div className="py-4"></div>
-
-            {GeneratedIssuesData ? (
-              <IssuesList issues={GeneratedIssuesData?.issues ?? []} />
-            ) : (
-              <div>
-                There seems to be a problem while displaying your issues
-              </div>
-            )}
-          </main>
-        )}
-      </DashboardLayout>
-    </>
+    <div>
+      {generatedIssuesLoading ? (
+        <LoadingHero />
+      ) : (
+        <div>
+          {GeneratedIssuesData ? (
+            <IssuesList issues={generatedIssues ?? []} />
+          ) : (
+            <div>
+              There seems to be a problem while displaying your issues
+            </div>
+          )}
+        </div>
+      )}
+    </div>
   );
-});
+};
 
 export default GeneratedIssuesPage;

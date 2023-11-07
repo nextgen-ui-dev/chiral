@@ -7,8 +7,9 @@ import { DashboardLayout } from "~/layouts/DashboardLayout";
 import PriorityBar from "./PriorityBar";
 import { ChevronLeft } from "lucide-react";
 import { Skeleton } from "~/components/ui/skeleton";
+import { withAuth } from "~/components/withAuth";
 
-const IssueDetailPage = () => {
+const IssueDetailPage = withAuth(() => {
   const router = useRouter();
   const issueId = router.asPath
     .replace("/", "")
@@ -131,6 +132,6 @@ const IssueDetailPage = () => {
       </DashboardLayout>
     </>
   );
-};
+});
 
 export default IssueDetailPage;

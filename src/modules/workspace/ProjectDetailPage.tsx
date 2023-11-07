@@ -58,7 +58,7 @@ export const ProjectDetailPage = withAuth(() => {
                     </main>
                 ) : (
                     <main className="flex min-h-screen w-full flex-row">
-
+                        Hello World
                     </main>
                 )}
             </DashboardLayout>
