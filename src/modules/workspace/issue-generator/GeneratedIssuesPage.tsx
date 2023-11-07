@@ -12,8 +12,13 @@ import { DashboardLayout } from "~/layouts/DashboardLayout";
 import { LoadingHero } from "~/layouts/LoadingHero";
 import { IssuesList, type IssueData } from "./IssuesList";
 
+import { Icon } from "@iconify/react";
+import { TeamSelectionCombobox } from "./TeamSelectionCombobox";
+
 interface GeneratedIssuesPageProps {
-  handleGenerate: (newValue: boolean) => void;
+  docId: string;
+  handleSelectTeam: (id: string) => void;
+  exportLinearDriver: (issues: IssueData[]) => void;
 }
 
 const jsonToObjArray = (j: JSON): IssueData[] => {
@@ -34,14 +39,12 @@ const jsonToObjArray = (j: JSON): IssueData[] => {
 }
 
 const GeneratedIssuesPage: React.FC<GeneratedIssuesPageProps> = ({
-  handleGenerate
+  docId: documentId,
+  handleSelectTeam,
+  exportLinearDriver
 }) => {
-  const router = useRouter();
-
   // const { data: sessionData, isLoading: sessionLoading } =
-    api.user.getSessionInfo.useQuery();
-
-  const documentId = "5c4c13b4-1474-4744-ab57-2557cf48668f";
+    // api.user.getSessionInfo.useQuery();
 
   const { data: GeneratedIssuesData, isLoading: generatedIssuesLoading } =
     api.workspace.issue.generateIssueRecommendations.useQuery({
@@ -53,8 +56,6 @@ const GeneratedIssuesPage: React.FC<GeneratedIssuesPageProps> = ({
   let generatedIssues: IssueData[] = [];
   if (GeneratedIssuesData) {
     generatedIssues = jsonToObjArray(GeneratedIssuesData);
-
-
     console.log("generatedIssues", generatedIssues);
   }
 
@@ -65,9 +66,24 @@ const GeneratedIssuesPage: React.FC<GeneratedIssuesPageProps> = ({
       ) : (
         <div>
           {GeneratedIssuesData ? (
-            <IssuesList issues={generatedIssues ?? []} />
-          ) : (
             <div>
+              <div className="flex items-center gap-x-4">
+                {/* Select team + Export to linear */}
+                <TeamSelectionCombobox 
+                  handleSelectTeam={handleSelectTeam}
+                />
+                <div
+                  className="flex items-center gap-x-2  text-white min-w-[50px] bg-white bg-opacity-30 border border-primary-500 p-2 text-lg rounded-lg hover:cursor-pointer"
+                  onClick={() => exportLinearDriver(generatedIssues)}
+                >
+                  <Icon icon="mingcute:linear-fill" fontSize={20} />
+                  Export to Linear
+                </div>
+              </div>
+              <IssuesList issues={generatedIssues ?? []} />
+            </div>
+          ) : (
+            <div className="flex flex-row items-center text-xl">
               There seems to be a problem while displaying your issues
             </div>
           )}

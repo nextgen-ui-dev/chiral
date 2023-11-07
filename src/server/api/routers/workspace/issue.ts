@@ -182,7 +182,8 @@ export const issueRouter = createTRPCRouter({
   exportGeneratedIssue: protectedProcedure
     .input(
       z.object({
-        providerIssueId: z.string(),
+        // providerIssueId: z.string(),
+        
         teamId: z.string(),
         // TODO for now add issue to speed up dev
         issue: z.object({

@@ -22,10 +22,12 @@ import {
 import { api } from "~/utils/api"
 import { Team } from "@linear/sdk"
 
-export function TeamSelectionCombobox() {
+export function TeamSelectionCombobox({
+  handleSelectTeam
+}: { handleSelectTeam?: (id: string) => void }) {
   const [open, setOpen] = React.useState(false)
   const [value, setValue] = React.useState("")
-
+  
   const { data: teams, isLoading: teamIsLoading } = 
     api.workspace.linear.getTeams.useQuery(undefined, {
       refetchOnWindowFocus: false
@@ -56,8 +58,9 @@ export function TeamSelectionCombobox() {
                 key={team.id}
                 value={team.id}
                 onSelect={(currentValue) => {
-                  setValue(currentValue === value ? "" : currentValue)
-                  setOpen(false)
+                  setValue(currentValue === value ? "" : currentValue);
+                  handleSelectTeam && handleSelectTeam(currentValue === value ? "" : currentValue);
+                  setOpen(false);
                 }}
               >
                 <Check

@@ -68,7 +68,7 @@ const columns: ColumnDef<DocumentData>[] = [
 
 interface IssueDocumentTableProps {
   documents: DocumentData[];
-  handleGenerate: (newValue: boolean) => void;
+  handleGenerate: (val: boolean, docId: string) => void;
 }
 
 export const IssueDocumentDataTable: React.FC<IssueDocumentTableProps> = ({
@@ -137,7 +137,7 @@ export const IssueDocumentDataTable: React.FC<IssueDocumentTableProps> = ({
                         <div 
                           className="max-w-[200px] flex justify-center text-white bg-white bg-opacity-30 border border-primary-500 p-2 text-lg rounded-lg hover:cursor-pointer"
                           onClick={() => {
-                            handleGenerate(true);
+                            handleGenerate(true, cell.row.original.id);
                           }}
                         >
                           Generate
