@@ -1,5 +1,8 @@
-import React, { useState } from "react";
-import { useRouter } from "next/router";
+import 
+  React
+  // { useState } 
+from "react";
+// import { useRouter } from "next/router";
 import type { User, Project } from "@linear/sdk";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 
@@ -45,15 +48,12 @@ export type IssueData = {
 export const IssuesList: React.FC<{ issues: IssueData[]}> = ({
   issues
 }) => {
-  const [showDialog, setShowDialog] = useState<boolean>(false);
-  const [dialogData, setDialogData] = useState<IssueData>();
-
-  const router = useRouter();
-  const [workspaceId] = router.asPath
-  .replace("/", "")
-  .replace("/documents", "")
-  .split("/");
-  console.log("Issues", issues);
+  // const router = useRouter();
+  // const [workspaceId] = router.asPath
+  // .replace("/", "")
+  // .replace("/documents", "")
+  // .split("/");
+  // console.log("Issues", issues);
 
   return (
     <div className="flex flex-col gap-y-2">
@@ -109,8 +109,6 @@ export const IssuesList: React.FC<{ issues: IssueData[]}> = ({
 
               <IssueDialog
                 trigger="Edit"
-                title={issue.title}
-                dialogDesc={issue.description}
                 issue={issue}
               />
             </div>

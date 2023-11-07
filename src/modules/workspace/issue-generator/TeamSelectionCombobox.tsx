@@ -20,7 +20,6 @@ import {
   PopoverTrigger,
 } from "~/components/ui/popover"
 import { api } from "~/utils/api"
-import { Team } from "@linear/sdk"
 
 export function TeamSelectionCombobox({
   handleSelectTeam
@@ -28,7 +27,7 @@ export function TeamSelectionCombobox({
   const [open, setOpen] = React.useState(false)
   const [value, setValue] = React.useState("")
   
-  const { data: teams, isLoading: teamIsLoading } = 
+  const { data: teams } = 
     api.workspace.linear.getTeams.useQuery(undefined, {
       refetchOnWindowFocus: false
     });

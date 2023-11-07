@@ -1,14 +1,9 @@
 /* eslint-disable @typescript-eslint/consistent-indexed-object-style */
 /* eslint-disable prefer-const */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import React, { useEffect } from "react";
-import axios from "axios";
-import { useRouter } from "next/router";
-import Head from "next/head";
 
+import React from "react";
 import { api } from "~/utils/api";
-import { withAuth } from "~/components/withAuth";
-import { DashboardLayout } from "~/layouts/DashboardLayout";
 import { LoadingHero } from "~/layouts/LoadingHero";
 import { IssuesList, type IssueData } from "./IssuesList";
 

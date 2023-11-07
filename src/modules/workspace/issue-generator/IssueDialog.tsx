@@ -10,21 +10,17 @@ import {
 } from "~/components/ui/dialog";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
-import { IssueData } from "./IssuesList";
+import type { IssueData } from "./IssuesList";
 import { IssuePriorityCombobox } from "./IssuePriorityCombobox";
 import { Textarea } from "~/components/ui/textarea";
 
 interface DialogProps {
   trigger: string;
-  title: string
-  dialogDesc: string;
   issue: IssueData;
 }
  
 export function IssueDialog({
   trigger,
-  title,
-  dialogDesc: description,
   issue
 }: DialogProps) {
   return (
@@ -67,11 +63,6 @@ export function IssueDialog({
                 defaultValue={issue.description}
               />
             </div>
-            {/* <Input
-              id="description"
-              defaultValue={`${issue.description}`}
-              className="col-span-3 row-span-2"
-            /> */}
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="priority" className="text-xl text-right">

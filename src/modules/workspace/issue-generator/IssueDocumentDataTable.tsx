@@ -8,7 +8,6 @@ import {
   flexRender,
 } from "@tanstack/react-table";
 import { ArrowUpDown } from "lucide-react";
-import { useRouter } from "next/router";
 import { useState } from "react";
 import { Button } from "~/components/ui/button";
 import {
@@ -87,8 +86,6 @@ export const IssueDocumentDataTable: React.FC<IssueDocumentTableProps> = ({
       sorting,
     },
   });
-
-  const router = useRouter();
 
   return (
     <div className="my-8 rounded-md border border-primary-dark">

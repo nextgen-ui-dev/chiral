@@ -6,7 +6,6 @@ import { DashboardLayout } from "~/layouts/DashboardLayout";
 import { useEffect } from "react";
 import { api } from "~/utils/api";
 import { LoadingHero } from "~/layouts/LoadingHero";
-import { DocumentsDataTable } from "./components/DocumentsDataTable";
 import { ProjectsDataTable } from "./components/ProjectsDataTable";
 
 export const ProjectsPage = withAuth(() => {

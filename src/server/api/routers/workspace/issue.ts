@@ -7,13 +7,13 @@ import { documents } from "~/server/db/schema";
 import { and, eq } from "drizzle-orm";
 
 import { createTRPCRouter, protectedProcedure } from "../../trpc";
-import { 
-  sessions, users, workspaces,
+// import { 
+//   sessions, users, workspaces,
 
-  generatedIssues, generatedIssueDetail 
-} from "~/server/db/schema";
+//   generatedIssues, generatedIssueDetail 
+// } from "~/server/db/schema";
 
-import { TRPCError } from "@trpc/server";
+// import { TRPCError } from "@trpc/server";
 
 // Vector DB
 import { astra } from "~/server/astra";
@@ -36,7 +36,7 @@ import type { ChainValues } from "langchain/dist/schema";
 
 // Others
 import * as Questions from "~/server/api/routers/workspace/generator/generatorQuestions";
-import { api } from "~/utils/api";
+// import { api } from "~/utils/api";
 import { getIssuePriorityLevel } from "~/modules/workspace/issue-generator/IssuesList";
 
 
@@ -242,30 +242,3 @@ export const issueRouter = createTRPCRouter({
       // });
     }),
 });
-
-// let genIssueMetadataResult = await ctx.db
-//   .select()
-//   .from(generatedIssues)
-//   .where(
-//     and(
-//       eq(generatedIssues.providerIssueId, input.providerIssueId),
-//       eq(generatedIssues.workspaceId, ctx.session.workspace_id),
-//       eq(generatedIssues.userId, ctx.session.user.id),
-//       eq(generatedIssues.teamId, input.teamId)
-//     ),
-//   )
-//   .limit(1);
-
-// if (genIssueMetadataResult.length < 1) {
-//   genIssueMetadataResult = await tx
-//     .insert(generatedIssues)
-//     .values({
-//       id: ulid().toString(),
-//       providerIssueId: input.providerIssueId,
-//       workspaceId: ctx.session.workspace_id,
-//       userId: ctx.session.user.id,
-//       teamId: input.teamId
-//     })
-//     .returning();
-
-//   const issueMeta = genIssueMetadataResult[0]!;

@@ -12,7 +12,7 @@ import { IssueDocumentDataTable } from "~/modules/workspace/issue-generator/Issu
 import { DashboardLayout } from "~/layouts/DashboardLayout";
 import { LoadingHero } from "~/layouts/LoadingHero";
 
-import { IssueData } from "./IssuesList";
+import { type IssueData } from "./IssuesList";
 
 const IssueGeneratorDashboard = withAuth(() => {
   const [generated, setGenerated] = useState<boolean>(false);
