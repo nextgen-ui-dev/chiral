@@ -51,7 +51,7 @@ const GeneratedIssuesPage: React.FC<GeneratedIssuesPageProps> = ({
   let generatedIssues: IssueData[] = [];
   if (GeneratedIssuesData) {
     generatedIssues = jsonToObjArray(GeneratedIssuesData);
-    console.log("generatedIssues", generatedIssues);
+    // console.log("generatedIssues", generatedIssues);
   }
 
   return (
@@ -79,7 +79,7 @@ const GeneratedIssuesPage: React.FC<GeneratedIssuesPageProps> = ({
             </div>
           ) : (
             <div className="flex flex-row items-center text-xl">
-              There seems to be a problem while displaying your issues
+              {"There seems to be a problem while displaying your issues. Have you tried chatting with the document first at `Documents` tab?"}
             </div>
           )}
         </div>
