@@ -12,7 +12,7 @@ import { IssueDialog } from "./IssueDialog";
 //   project: Project | undefined;
 // }
 
-const getPriorityLevel = (pr: string) => {
+export const getIssuePriorityLevel = (pr: string) => {
   const pl = pr.toLowerCase();
   if (pl === "urgent") {
     return 1;
@@ -62,12 +62,11 @@ export const IssuesList: React.FC<{ issues: IssueData[]}> = ({
           return;
         }
 
-        const priorityLevel = getPriorityLevel(issue.priority);
+        const priorityLevel = getIssuePriorityLevel(issue.priority);
 
         return (
           <div 
             key={issue.id}
-            // onClick={() => router.push(`/${workspaceId}/generate/${issue.id}`)}
             className={"w-full text-sm rounded-none rounded-b-none px-4 py-2 min-h-[40px] flex flex-row border-b border-opacity-50 border-gray-500 hover:bg-gray-500 hover:bg-opacity-20 text-white font-semibold justify-between items-center hover:cursor-pointer"}
           >
             <div className="flex flex-row gap-x-4 items-center">

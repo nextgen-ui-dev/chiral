@@ -7,7 +7,12 @@ import { documents } from "~/server/db/schema";
 import { and, eq } from "drizzle-orm";
 
 import { createTRPCRouter, protectedProcedure } from "../../trpc";
-import { generatedIssues, generatedIssueDetail } from "~/server/db/schema";
+import { 
+  sessions, users, workspaces,
+
+  generatedIssues, generatedIssueDetail 
+} from "~/server/db/schema";
+
 import { TRPCError } from "@trpc/server";
 
 // Vector DB
@@ -31,6 +36,8 @@ import type { ChainValues } from "langchain/dist/schema";
 
 // Others
 import * as Questions from "~/server/api/routers/workspace/generator/generatorQuestions";
+import { api } from "~/utils/api";
+import { getIssuePriorityLevel } from "~/modules/workspace/issue-generator/IssuesList";
 
 
 export const issueRouter = createTRPCRouter({
@@ -97,8 +104,6 @@ export const issueRouter = createTRPCRouter({
     
       // 1. Document Context Retrieval
       // Create message to initiate embedding retrieval
-      
-    
       // QA_1: Background
       const backgroundEmbedding = new Float32Array(
         await embeddingModel.embedQuery(Questions.backgroundQuestion),
@@ -164,6 +169,9 @@ export const issueRouter = createTRPCRouter({
         question: Questions.condenseQuestionTemplate
       }); 
 
+      // Store to db
+      // TODO
+
       let result;
       result = finalResponse.text as string;
       result = JSON.parse(result) as JSON;
@@ -175,48 +183,62 @@ export const issueRouter = createTRPCRouter({
     .input(
       z.object({
         providerIssueId: z.string(),
-        issueId: z.string(),
+        teamId: z.string(),
+        // TODO for now add issue to speed up dev
+        issue: z.object({
+          title: z.string(),
+          description: z.string(),
+          priority: z.string()
+        }),
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      await ctx.db.transaction(async (tx) => {
-        const issueMetadataRes = await tx
-          .select()
-          .from(generatedIssues)
-          .where(eq(generatedIssues.id, input.issueId))
-          .limit(1);
-
-        if (issueMetadataRes.length < 1) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "Issue Metadata not found",
-          });
-        }
-
-        const issueMetadata = issueMetadataRes[0];
-
-        const issueDetailRes = await tx
-          .select()
-          .from(generatedIssueDetail)
-          .where(eq(generatedIssueDetail.issueId, input.issueId))
-          .limit(1);
-
-        if (issueDetailRes.length < 1) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "Issue not found",
-          });
-        }
-
-        const issueDetail = issueDetailRes[0];
-
-        await ctx.linearClient?.createIssue({
-          teamId: issueMetadata?.teamId ?? "",
-          title: issueDetail?.title,
-          description: issueDetail?.description,
-          priority: issueDetail?.priority,
-        });
+      await ctx.linearClient?.createIssue({
+        teamId: input.teamId,
+        title: input.issue.title,
+        description: input.issue.description,
+        priority: getIssuePriorityLevel(input.issue.priority),
       });
+
+      // NOTE - DONT DELETE - for now gausah query dari db dulu. Lgsg terima suggestions dari LLM
+      // await ctx.db.transaction(async (tx) => {
+      //   const issueMetadataRes = await tx
+      //     .select()
+      //     .from(generatedIssues)
+      //     .where(eq(generatedIssues.id, input.issueId))
+      //     .limit(1);
+
+      //   if (issueMetadataRes.length < 1) {
+      //     throw new TRPCError({
+      //       code: "NOT_FOUND",
+      //       message: "Issue Metadata not found",
+      //     });
+      //   }
+
+      //   const issueMetadata = issueMetadataRes[0];
+
+      //   const issueDetailRes = await tx
+      //     .select()
+      //     .from(generatedIssueDetail)
+      //     .where(eq(generatedIssueDetail.issueId, input.issueId))
+      //     .limit(1);
+
+      //   if (issueDetailRes.length < 1) {
+      //     throw new TRPCError({
+      //       code: "NOT_FOUND",
+      //       message: "Issue not found",
+      //     });
+      //   }
+
+      //   const issueDetail = issueDetailRes[0];
+
+        // await ctx.linearClient?.createIssue({
+        //   teamId: issueMetadata?.teamId ?? "",
+        //   title: issueDetail?.title,
+        //   description: issueDetail?.description,
+        //   priority: issueDetail?.priority,
+        // });
+      // });
     }),
 });
 

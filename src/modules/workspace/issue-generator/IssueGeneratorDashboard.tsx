@@ -11,7 +11,8 @@ import GeneratedIssuesPage from "./GeneratedIssuesPage";
 import { IssueDocumentDataTable } from "~/modules/workspace/issue-generator/IssueDocumentDataTable";
 import { DashboardLayout } from "~/layouts/DashboardLayout";
 import { LoadingHero } from "~/layouts/LoadingHero";
-import { LucideChevronLeft } from "lucide-react";
+import { Icon } from "@iconify/react";
+import { TeamSelectionCombobox } from "./TeamSelectionCombobox";
 
 const IssueGeneratorDashboard = withAuth(() => {
   const [generated, setGenerated] = useState<boolean>(false);
@@ -65,14 +66,18 @@ const IssueGeneratorDashboard = withAuth(() => {
           <main className="flex min-h-screen w-full flex-col p-8">
             <div className={`flex flex-row justify-between pb-6`}>
               <h1 className="text-3xl font-bold">Issue Recommendations</h1>
-              <div
-                className="flex items-center gap-x-2  text-white min-w-[60px] bg-white bg-opacity-30 border border-primary-500 p-2 text-lg rounded-lg hover:cursor-pointer"
-                onClick={() => {
-                  handleGenerate(false)
-                }}
-              >
-                <LucideChevronLeft size={14} />
-                Back
+              <div className="flex items-center gap-x-4">
+                {/* Select team + Export to linear */}
+                <TeamSelectionCombobox />
+                <div
+                  className="flex items-center gap-x-2  text-white min-w-[60px] bg-white bg-opacity-30 border border-primary-500 p-2 text-lg rounded-lg hover:cursor-pointer"
+                  onClick={() => {
+                    handleGenerate(false)
+                  }}
+                >
+                  <Icon icon="mingcute:linear-fill" fontSize={20} />
+                  Export to Linear
+                </div>
               </div>
             </div>
               <GeneratedIssuesPage
