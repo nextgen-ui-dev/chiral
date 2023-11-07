@@ -1,6 +1,6 @@
 # Installation
 FROM node:18.18.2-alpine AS deps
-RUN apk add --no-cache libc6-compat nasm autoconf automake bash libltdl libtool gcc make g++ zlib-dev
+RUN apk add --no-cache libc6-compat
 
 WORKDIR /app
 
@@ -19,6 +19,7 @@ RUN npm run build && npm install --production --ignore-scripts --prefer-offline
 
 # Runner
 FROM node:18.18.2-alpine AS runner
+RUN apk add --no-cache libc6-compat
 
 WORKDIR /app
 
