@@ -9,6 +9,7 @@ import { IssuesList, type IssueData } from "./IssuesList";
 
 import { Icon } from "@iconify/react";
 import { TeamSelectionCombobox } from "./TeamSelectionCombobox";
+import { useState } from "react";
 
 interface GeneratedIssuesPageProps {
   docId: string;
@@ -62,7 +63,7 @@ const GeneratedIssuesPage: React.FC<GeneratedIssuesPageProps> = ({
         <div>
           {GeneratedIssuesData ? (
             <div>
-              <div className="flex items-center gap-x-4">
+              <div className="flex items-center gap-x-4 py-6">
                 {/* Select team + Export to linear */}
                 <TeamSelectionCombobox 
                   handleSelectTeam={handleSelectTeam}

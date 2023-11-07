@@ -1,6 +1,6 @@
 import 
-  React
-  // { useState } 
+  React,
+  { useState } 
 from "react";
 // import { useRouter } from "next/router";
 import type { User, Project } from "@linear/sdk";
@@ -48,12 +48,7 @@ export type IssueData = {
 export const IssuesList: React.FC<{ issues: IssueData[]}> = ({
   issues
 }) => {
-  // const router = useRouter();
-  // const [workspaceId] = router.asPath
-  // .replace("/", "")
-  // .replace("/documents", "")
-  // .split("/");
-  // console.log("Issues", issues);
+  const [updated, setUpdated] = useState<boolean>();
 
   return (
     <div className="flex flex-col gap-y-2">
@@ -110,6 +105,7 @@ export const IssuesList: React.FC<{ issues: IssueData[]}> = ({
               <IssueDialog
                 trigger="Edit"
                 issue={issue}
+                changed={() => setUpdated(!updated)}
               />
             </div>
           </div>
