@@ -1,6 +1,5 @@
 # Installation
-FROM node:18.18.2-alpine AS deps
-RUN apk add --no-cache libc6-compat
+FROM node:18.18.2-bullseye-slim AS deps
 
 WORKDIR /app
 
@@ -9,7 +8,7 @@ RUN npm ci
 
 
 # Build
-FROM node:18.18.2-alpine AS builder
+FROM node:18.18.2-bullseye-slim AS builder
 
 WORKDIR /app
 
@@ -18,7 +17,7 @@ COPY --from=deps /app/node_modules ./node_modules
 RUN npm run build && npm install --production --ignore-scripts --prefer-offline
 
 # Runner
-FROM node:18.18.2-alpine AS runner
+FROM node:18.18.2-bullseye-slim AS runner
 
 WORKDIR /app
 
@@ -29,12 +28,12 @@ RUN adduser --system --uid 1001 nextjs
 
 RUN mkdir -pv ./config
 
-COPY --from=builder /app/next.config.mjs ./
+COPY --from=builder --chown=nextjs:nodejs /app/next.config.mjs ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next ./.next
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/src/env.mjs ./src/env.mjs
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package.json ./package.json
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/src/env.mjs ./src/env.mjs
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules ./node_modules
+COPY --from=builder --chown=nextjs:nodejs /app/package.json ./package.json
 
 USER nextjs
 
