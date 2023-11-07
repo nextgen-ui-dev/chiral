@@ -12,6 +12,8 @@ export const condenseQuestionTemplate  = `
   Issues are the smallest unit of task that a project team member could pick up. Issues should contain exactly 3 fields: Title, Description, and Priority (high/medium/low). Title should be the feature name that you recommend, for example: "Open new payment channels for e-commerce". Description should be an elaboration of the Title so engineers could understand, for example: "Integrate Stripe payment API into site". Priority should be guessed by the importance of the topic in the Title to the business. Don't just parrot from the document given, but try to create something new!
   
   The output format for each issue shall be a single JSON with a numeric key (id) and a JSON value. The JSON value of each key contains 3 fields mentioned above. All JSON fields (but not the values), if a string type, should be in lowercase. No deviations from this format is allowed. 
+
+  Regarding the description field, you should insert at least three things: the description of the issue, an example of user stories using the format (e.g. As a "product manager", I want to "automatically generate tickets", so that "I can reduce effort in managing tickets, like this but just remove the double quotes as it's only meant to show emphasis)
   
   CONTEXT IS BELOW:
   {context}

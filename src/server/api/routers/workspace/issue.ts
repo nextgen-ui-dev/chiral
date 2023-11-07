@@ -97,14 +97,17 @@ export const issueRouter = createTRPCRouter({
           [document.id],
           { prepare: true },
       );
-    
+
+      
       const maxTimestamp = maxTimestampResult.rows[0]?.get(
         "most_recent_created_at",
-      ) as Date;
+        ) as Date;
+      
+      console.log(document.id);
+      console.log("maxTimestampResult", maxTimestampResult);
+      console.log("maxTimestamp", maxTimestamp);
     
       // 1. Document Context Retrieval
-      // Create message to initiate embedding retrieval
-      // QA_1: Background
       const backgroundEmbedding = new Float32Array(
         await embeddingModel.embedQuery(Questions.backgroundQuestion),
       );
