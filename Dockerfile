@@ -1,6 +1,6 @@
 # Installation
 FROM node:18.18.2-alpine AS deps
-RUN apk add --no-cache libc6-compat
+RUN apk add --no-cache libc6-compat gcompat
 
 WORKDIR /app
 
@@ -19,7 +19,7 @@ RUN npm run build && npm install --production --ignore-scripts --prefer-offline
 
 # Runner
 FROM node:18.18.2-alpine AS runner
-RUN apk add --no-cache libc6-compat
+RUN apk add --no-cache libc6-compat gcompat
 
 WORKDIR /app
 
