@@ -11,7 +11,7 @@ import { ValidAuthProviders, auth } from "~/server/auth";
 import { ulid } from "~/lib/ulid";
 import { db } from "~/server/db";
 import { sessions, users, workspaces } from "~/server/db/schema";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 
 interface LinearAccessTokenRes {
   access_token: string;
@@ -160,7 +160,12 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     const result = await db
       .select()
       .from(sessions)
-      .where(eq(sessions.workspaceId, workspaceId))
+      .where(
+        and(
+          eq(sessions.workspaceId, workspaceId),
+          eq(sessions.userId, user.id),
+        )
+      )
       .limit(1);
     if (result.length >= 1) {
       session = await auth.validateSession(result[0]!.id);
